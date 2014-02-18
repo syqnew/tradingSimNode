@@ -7,9 +7,21 @@ var express = require('express')
 
 app.listen(3000);
 
-app.get('/', function(req, res) {
-  res.sendfile(__dirname + '/routes/index.html');
-});
+var routes = require('./routes');
+var path = require('path');
+var index = require('./routes/index');
+// var admin = require('./routes/admin');
+// var trader = require('./routes/trader');
+// var start = require('./routes/start');
+
+app.set('view engine', 'jade');
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/', routes.index);
+
+// app.get('/', function(req, res) {
+//   res.sendfile(__dirname + '/routes/index.html');
+// });
 
 // app.get('/admin', function(req, res) {
 //     res.sendfile(__dirname + '/routes/admin.html');
@@ -19,7 +31,6 @@ app.get('/', function(req, res) {
 //     res.sendfile(__dirname + '/routes/trader.html');
 // });
 
-app.use(express.static(path.join(__dirname, 'public')));
 
 io.sockets.on('connection', function (socket) {
     // make sure that a nickname is sent first before any requests can be taken 
