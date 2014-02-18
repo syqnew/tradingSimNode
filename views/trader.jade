@@ -1,0 +1,45 @@
+extends layout
+block content
+  script(src='../javascripts/trader.js')
+  
+  div(class="container")
+    div(class='jumbotron') 
+
+      div(class='row lead', id='traderInfo')
+        div(class='col-md-3')
+          p First Name
+          input(type='text', class='form-control lead', id='nameInput', placholder='e.g. Stephanie')
+          p Email
+          input(type='email', class='form-control lead', id='emailInput', placholder='e.g. pandas@gmail.com')
+          a(class='btn btn-success', id='submitBtn') Next
+
+      div(class='container', id='traderView')
+        div(class='row lead')
+          div(class='col-md-8')
+            p Graph
+          div(class='col-md-4')
+            div(class='row')
+              p Order Form 
+              p Canceling Orders
+        div(class='row lead')
+          div(class='col-md-8')
+            p Portfolio Info
+          div(class='col-md-4')
+            div(class='row')
+              p Transaction history
+
+
+    script(src='/socket.io/socket.io.js')
+    script(type='text/javascript').
+      $('#traderView').hide();
+      var socket = new Socket()
+
+      $('#submitBtn').click( function() {
+        if ( $('#nameInput').val().length > 0 && $('#emailInput').val().length > 0 ) {
+          $('#traderInfo').hide();
+          socket.connectToServer($('#nameInput').val(), $('#emailInput').val(), function(data, err) {
+            $('#traderView').show();
+          });
+        }
+      });
+   
