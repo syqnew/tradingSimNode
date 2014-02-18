@@ -1,34 +1,30 @@
-doctype html
-html(lang='en')
-  head
-    script(src='../javascripts/index.js')
-    script(src='//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.0/jquery.min.js')
-    script(src='//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.0/js/bootstrap.min.js')
-    link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.0/css/bootstrap.min.css')
-  body
-    div(class='container')
-      div(class='header')
-        h3(class='text-muted') Charles River Trading Simulation
+extends layout
+block content
+  div(class='container')
+    div(class='header')
+      h3(class='text-muted') Charles River Trading Simulation
 
-    div(class='container')
-      div(class='jumbotron')  
-        h1 Welcome
-        div(id='general')
-          p(class='lead') Are you a trader or a facilitator?
-          div(class='row lead')
-            div(class='col-md-3')
-              select(id='select', class='form-control')
-                option Trader
-                option Facilitator
-
-        div(class='row lead', id='adminPassword')
+  div(class='container')
+    div(class='jumbotron')  
+      h1 Welcome
+      div(id='general')
+        p(class='lead') Are you a trader or a facilitator?
+        div(class='row lead')
           div(class='col-md-3')
-            p Password
-            input(type='password', class='form-control', id='adminPasswordInput', placholder='Password')
+            select(id='select', class='form-control')
+              option Trader
+              option Facilitator
 
-        div(class='row')
-          div(class='col-md-2')
-            a(class='btn btn-success', id='submitBtn') Next
+      div(class='row lead', id='adminPassword')
+        div(class='col-md-3')
+          p Password
+          input(type='password', class='form-control', id='adminPasswordInput', placholder='Password')
+
+      div(class='row')
+        div(class='col-md-2')
+          a(class='btn btn-success', id='submitBtn') Next
+  
+    script(src='../javascripts/index.js')
 
     script(type='text/javascript').
       $('#adminPassword').hide();
