@@ -19,18 +19,26 @@
     <div class="container">
         <div class="jumbotron">
         <h1>Welcome</h1>
-        <p class="lead">Are you a trader or a facilitator?</p>
-        <div class="row lead">
+        <div id="general">
+            <p class="lead">Are you a trader or a facilitator?</p>
+            <div class="row lead">
+                <div class="col-md-3">
+                    <select id="select" class="form-control">
+                    <option>Trader</option>
+                    <option>Admin</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row lead" id="adminPassword">
             <div class="col-md-3">
-                <select id="select" class="form-control">
-                <option>Trader</option>
-                <option>Admin</option>
-                </select>
+                <p>Password</p>
+                <input type="password" class="form-control" id="adminPasswordInput" placeholder="Password">
             </div>
         </div>
         <div class="row">
             <div class="col-md-2">
-                <a class="btn btn-success" href="../admin" role="button">Next</a>
+                <a class="btn btn-success" id="submitBtn">Next</a>
             </div>
         </div>
         </div>
@@ -38,6 +46,29 @@
 
       
     </div>
+
+    <script type="text/javascript">
+        $("#adminPassword").hide();
+        $("#submitBtn").click(function() {
+            var selection = $("#select").find(":selected").text();
+            if (selection === "Trader") {
+                document.location.href="/trader";
+            } else {
+                if ($("#general").is(":visible") ) {
+
+                    $("#adminPassword").show();
+                    $("#general").hide();
+                } else {
+                    if ($("#adminPasswordInput").val() === "password") {
+                        document.location.href="/admin";
+                    } else {
+                        $("#adminPasswordInput").val("");
+                    }
+                }
+                
+            }
+        });
+    </script>
 
 
 

@@ -8,6 +8,14 @@ app.get('/', function (req, res) {
   res.sendfile(__dirname + '/index.html');
 });
 
+app.get('/admin', function(req, res) {
+    res.sendfile(__dirname + '/admin.html');
+});
+
+app.get('/trader', function(req, res) {
+    res.sendfile(__dirname + '/trader.html');
+});
+
 io.sockets.on('connection', function (socket) {
     // make sure that a nickname is sent first before any requests can be taken 
     socket.on('set nickname', function (name) {
