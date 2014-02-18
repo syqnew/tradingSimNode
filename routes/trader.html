@@ -1,0 +1,42 @@
+<!-- <html>
+<head>
+     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.0/js/bootstrap.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    
+
+    <link rel="stylesheet" type="text/css"
+        href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.0/css/bootstrap.min.css"></link>
+</head>
+<body>
+	<div class="container">
+		<h1>Welcome to the Trader page</h1>
+
+<script>
+    var socket = io.connect('http://localhost');
+    
+    socket.emit('set nickname', {nickname: "Panda"}); 
+    
+    socket.on('ready', function (data) {
+        console.log(data);
+    });
+                
+    socket.on('news', function (data) {
+        console.log(data);
+        socket.emit('my other event', { my: 'data' });
+    });
+</script>
+	</div>
+</body>
+
+</html> -->
+<!-- 
+<script src="/socket.io/socket.io.js"></script> -->
+<script>
+  var socket = io.connect('http://localhost');
+  socket.on('news', function (data) {
+    console.log(data);
+    socket.emit('my other event', { my: 'data' });
+  });
+</script>
