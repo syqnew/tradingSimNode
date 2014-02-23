@@ -16,6 +16,7 @@ var trader = require('./routes/trader');
 
 app.set('view engine', 'jade');
 app.use(express.static(path.join(__dirname, 'public')));
+// app.use(express.static(path.join(__dirname, 'templates')));
 
 app.get('/', routes.index);
 app.get('/trader', trader.trade);

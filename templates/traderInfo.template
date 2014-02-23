@@ -1,0 +1,7 @@
+<div class='col-md-3'>
+  <p>First Name</p>
+  <input type='text', class='form-control lead', id='nameInput', placholder='e.g. Stephanie'/>
+  <p>Email</p>
+  <input type='email', class='form-control lead', id='emailInput', placholder='e.g. pandas@gmail.com'/>
+  <a class='btn btn-success', id='submitBtn'>Next</a>
+</div>
