@@ -10,32 +10,67 @@ block content
         script(id='traderInfo-template' type='text/x-handlebars-template')
           div(class='col-md-3')
             p First Name
-            input(type='text', class='form-control lead', id='nameInput', placholder='e.g. Stephanie')
+            input(type='text', class='form-control lead', id='nameInput', placeholder='e.g. Stephanie')
             p Email
-            input(type='email', class='form-control lead', id='emailInput', placholder='e.g. pandas@gmail.com')
+            input(type='email', class='form-control lead', id='emailInput', placeholder='e.g. pandas@gmail.com')
             a(class='btn btn-success', id='submitBtn') Next
 
-        script(id='trade-template' type='text/x-handlebars-template')
+        script(id='trade-template', type='text/x-handlebars-template')
           div(class='container', id='traderView')
             div(class='row lead')
               div(class='col-md-8')
                 p Graph
               div(class='col-md-4')
                 div(class='row')
-                  p Order Form 
-                  p Canceling Orders
+                  p Order Form
+                  div(class='col-md-12')
+                    div(class='row')
+                      p Order Type
+                    div(class='row')
+                      div(class='col-md-6')
+                        select(id='orderType', class='form-control lead')
+                          option(value='option1') Market Buy
+                          option(value='option1') Market Sell
+                          option(value='option2') Limit Buy
+                          option(value='option2') Limit Sell
+                    div(class='row', id='orderInputs')
+
+                
             div(class='row lead')
               div(class='col-md-8')
                 p Portfolio Info
               div(class='col-md-4')
                 div(class='row')
+                  p Canceling Orders
+                div(class='row')
                   p Transaction history
+
+    script(id='orderInputsVolume-template', type='text/x-handlebars-template')
+      div(class='col-sm-5')
+        div(class='row')
+          p Volume
+        div(class='row')
+          input(type='text', class='form-control', id='volumeInput', placeholder='e.g. 100')
+
+    script(id='orderInputsBoth-template', type='text/x-handlebars-template')
+      div(class='col-sm-5')
+        div(class='row')
+          p Price
+        div(class='row')
+          input(type='text', class='form-control', id='priceInput', placeholder='e.g. 100')
+      div(class='col-sm-5 col-sm-offset-1')
+        div(class='row')
+          p Volume
+        div(class='row')
+          input(type='text', class='form-control', id='volumeInput', placeholder='e.g. 100')
 
 
     script(src='/socket.io/socket.io.js')
     script(type='text/javascript').
       _traderInfoTemplate = Handlebars.compile($('#traderInfo-template').html());
       _tradeTemplate = Handlebars.compile($('#trade-template').html());
+      _orderInputsVolumeTemplate = Handlebars.compile($('#orderInputsVolume-template').html());
+      _orderInputsBothTemplate = Handlebars.compile($('#orderInputsBoth-template').html());
 
       $('#traderView').html(_traderInfoTemplate);
       
@@ -45,7 +80,18 @@ block content
         if ( $('#nameInput').val().length > 0 && $('#emailInput').val().length > 0 ) {
           socket.connectToServer($('#nameInput').val(), $('#emailInput').val(), function(data, err) {
             $('#traderView').html(_tradeTemplate);
+            $('#orderInputs').html(_orderInputsVolumeTemplate);
+
+              $('#orderType').on('change', function() {
+                var option = $(this).val();
+                if (option == 'option1')
+                  $('#orderInputs').html(_orderInputsVolumeTemplate);
+                else 
+                  $('#orderInputs').html(_orderInputsBothTemplate);
+            });
           });
         }
       });
+
+     
    
