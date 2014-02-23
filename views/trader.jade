@@ -22,7 +22,7 @@ block content
                 p Graph
               div(class='col-md-4')
                 div(class='row')
-                  p Order Form
+                  label Order Form
                   div(class='col-md-12')
                     div(class='row')
                       p Order Type
@@ -46,14 +46,17 @@ block content
                   p Canceling Orders
                 div(class='row')
                   p Transaction history
+                  div(id='transactions')
 
+    // Template for Market Orders
     script(id='orderInputsVolume-template', type='text/x-handlebars-template')
       div(class='col-sm-5')
         div(class='row')
           p Volume
         div(class='row lead')
           input(type='text', class='form-control', id='volumeInput', placeholder='e.g. 100')
-
+    
+    // Template for Limit Orders
     script(id='orderInputsBoth-template', type='text/x-handlebars-template')
       div(class='col-sm-5')
         div(class='row')
@@ -66,6 +69,17 @@ block content
         div(class='row')
           input(type='text', class='form-control', id='volumeInput', placeholder='e.g. 100')
 
+    // Template for Transaction History
+    script(id='transactions-template' type='text/x-handlebars-template')
+      ul(class='list-unstyled')
+        {{#each transactions}}
+        li {{this}}
+        {{/each}}
+
+    // Template for Portfolio Information
+    script(id='portfolio-template' type='text/x-handlebars-template')
+      table(class='table table-bordered')
+
 
     script(src='/socket.io/socket.io.js')
     script(type='text/javascript').
@@ -73,6 +87,7 @@ block content
       _tradeTemplate = Handlebars.compile($('#trade-template').html());
       _orderInputsVolumeTemplate = Handlebars.compile($('#orderInputsVolume-template').html());
       _orderInputsBothTemplate = Handlebars.compile($('#orderInputsBoth-template').html());
+      _transactionsTemplate = Handlebars.compile($('#transactions-template').html());
 
       $('#traderView').html(_traderInfoTemplate);
       
@@ -83,6 +98,7 @@ block content
           socket.connectToServer($('#nameInput').val(), $('#emailInput').val(), function(data, err) {
             $('#traderView').html(_tradeTemplate);
             $('#orderInputs').html(_orderInputsVolumeTemplate);
+            $('#transactions').html(_transactionsTemplate({ transactions: ["You sold 100 shares at $2332", "You bought 200 shares at $5"] } ));
 
               $('#orderType').on('change', function() {
                 var option = $(this).val();
