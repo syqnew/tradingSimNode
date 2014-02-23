@@ -30,10 +30,12 @@ block content
                       div(class='col-md-6')
                         select(id='orderType', class='form-control lead')
                           option(value='option1') Market Buy
-                          option(value='option1') Market Sell
-                          option(value='option2') Limit Buy
-                          option(value='option2') Limit Sell
+                          option(value='option2') Market Sell
+                          option(value='option3') Limit Buy
+                          option(value='option4') Limit Sell
                     div(class='row', id='orderInputs')
+                    div(class='row')
+                      button(type='button' class='btn btn-primary' id='submitOrderBtn') Submit Order
 
                 
             div(class='row lead')
@@ -51,8 +53,6 @@ block content
           p Volume
         div(class='row lead')
           input(type='text', class='form-control', id='volumeInput', placeholder='e.g. 100')
-        div(class='row')
-          button(type='button' class='btn btn-primary' id='submitOrderBtn') Submit Order
 
     script(id='orderInputsBoth-template', type='text/x-handlebars-template')
       div(class='col-sm-5')
@@ -60,8 +60,6 @@ block content
           p Price
         div(class='row lead')
           input(type='text', class='form-control', id='priceInput', placeholder='e.g. 100')
-        div(class='row')
-          button(type='button' class='btn btn-primary' id='submitOrderBtn') Submit Order
       div(class='col-sm-5 col-sm-offset-1')
         div(class='row')
           p Volume
@@ -88,11 +86,34 @@ block content
 
               $('#orderType').on('change', function() {
                 var option = $(this).val();
-                if (option == 'option1')
+                if (option === 'option1' || option === 'option2')
                   $('#orderInputs').html(_orderInputsVolumeTemplate);
                 else 
                   $('#orderInputs').html(_orderInputsBothTemplate);
-            });
+              });
+
+              $('#submitOrderBtn').click(function() {
+                //TODO: check if inputs were valid
+                var orderObject = {};
+                orderObject['volume'] = $('#volumeInput').val();
+
+                var option = $('#orderType').val();
+                console.log(option);
+                if (option === 'option1') orderObject['type'] = 'marketBuy';
+                else if (option === 'option2') orderObject['type'] = 'marketSell';
+                else if (option === 'option3') {
+                  orderObject['type'] = 'limitBuy';
+                  orderObject['price'] = $('#priceInput').val();
+                }
+                else if (option === 'option4') {
+                  orderObject['type'] = 'limitSell';
+                  orderObject['price'] = $('#priceInput').val();
+                }
+                socket.makeOrder(orderObject);
+
+                $('input').val('');
+                
+              });
           });
         }
       });

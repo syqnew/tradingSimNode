@@ -8,4 +8,8 @@ Socket.prototype.connectToServer = function(name, email, callback) {
     this.socket.on('ready', function (data) {
     	callback();
     });
-}
+};
+
+Socket.prototype.makeOrder = function(orderObject) {
+	this.socket.emit('make order', orderObject);
+};

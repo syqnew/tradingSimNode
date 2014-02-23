@@ -27,6 +27,10 @@ io.sockets.on('connection', function (socket) {
         socket.set('nickname', obj["name"], function () {
             // TODO: need to check that name hasn't been taken
             socket.emit('ready', obj["name"]);
+
+            socket.on('make order', function(obj) {
+              console.log(obj);
+            });
             
             // send message with event name 'news'
             // socket.emit('news', { hello: 'world' });
