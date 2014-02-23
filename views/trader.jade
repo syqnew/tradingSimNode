@@ -49,15 +49,19 @@ block content
       div(class='col-sm-5')
         div(class='row')
           p Volume
-        div(class='row')
+        div(class='row lead')
           input(type='text', class='form-control', id='volumeInput', placeholder='e.g. 100')
+        div(class='row')
+          button(type='button' class='btn btn-primary' id='submitOrderBtn') Submit Order
 
     script(id='orderInputsBoth-template', type='text/x-handlebars-template')
       div(class='col-sm-5')
         div(class='row')
           p Price
-        div(class='row')
+        div(class='row lead')
           input(type='text', class='form-control', id='priceInput', placeholder='e.g. 100')
+        div(class='row')
+          button(type='button' class='btn btn-primary' id='submitOrderBtn') Submit Order
       div(class='col-sm-5 col-sm-offset-1')
         div(class='row')
           p Volume
