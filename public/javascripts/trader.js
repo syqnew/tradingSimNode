@@ -7,6 +7,7 @@ _porfolioTemplate = Handlebars.compile($('#portfolio-template').html());
 
 $('#traderView').html(_traderInfoTemplate);
       
+var currentOrders = [];
 var socket = io.connect('http://localhost');
 //var socket = new Socket()
 
@@ -15,9 +16,14 @@ $('#submitBtn').click( function() {
   		socket.emit('set nickname', {name: $('#nameInput').val() , email: $('#emailInput').val()});
     	socket.on('ready', function (data) {
 
+    		// Initialize the trading panel
 	    	$('#traderView').html(_tradeTemplate);
 	    	$('#orderInputs').html(_orderInputsVolumeTemplate);
+
+	    	// Get fake transactions
 	    	$('#transactions').html(_transactionsTemplate({ transactions: ["You sold 100 shares at $2332", "You bought 200 shares at $5"] } ));
+
+	    	// Set fake portfolio data
 	    	var samplePortfolio = {}
     		samplePortfolio['last']='34';
     		samplePortfolio['low']='34';
@@ -31,35 +37,42 @@ $('#submitBtn').click( function() {
     		samplePortfolio['crlTotal']='34';
 			samplePortfolio['cashTotal']='34';
 			samplePortfolio['total']='34';
-
 			$('#portfolio').html(_porfolioTemplate(samplePortfolio));
 
 			$('#orderType').on('change', function() {
 				var option = $(this).val();
-				if (option === 'option1' || option === 'option2') $('#orderInputs').html(_orderInputsVolumeTemplate);
+				if (option === 'marketBuy' || option === 'marketSell') $('#orderInputs').html(_orderInputsVolumeTemplate);
 				else $('#orderInputs').html(_orderInputsBothTemplate);
     		});
 
 			$('#submitOrderBtn').click(function() {
+				var time = new Date().getTime();
+
 				//TODO: check if inputs were valid and non empty
 				var orderObject = {};
-				orderObject['volume'] = $('#volumeInput').val();
+				orderObject['time'] = time;
+
+				var volume = $('#volumeInput').val();
+				orderObject['volume'] = volume;
+
 				var option = $('#orderType').val();
-				console.log(option);
-				if (option === 'option1') orderObject['type'] = 'marketBuy';
-				else if (option === 'option2') orderObject['type'] = 'marketSell';
-				else if (option === 'option3') {
-					orderObject['type'] = 'limitBuy';
+				orderObject['type'] = option;
+				currentOrders[time] = [option, volume];
+
+				if (option === 'limitBuy' || option === 'limitSell') {
 					orderObject['price'] = $('#priceInput').val();
+					currentOrders[time].push($('#priceInput').val());
 				}
-				else if (option === 'option4') {
-					orderObject['type'] = 'limitSell';
-					orderObject['price'] = $('#priceInput').val();
-				}
+				
 				socket.emit('make order', orderObject);
 				//socket.makeOrder(orderObject);
 				$('input').val('');
                 
+			});
+
+			// socket listens to the server for updates
+			socket.on('update', function(data) {
+				console.log(data);
 			});
     	});
     }
