@@ -57,15 +57,10 @@ io.sockets.on('connection', function (socket) {
                 transObject['total']='99';
                 console.log(obj);
 
-                // send them to all except socket that initiated
+                // send to all sockets
                 io.sockets.emit('update', transObject);
                 
             });
-
-
-
-            // send message with event name 'news'
-            // socket.emit('news', { hello: 'world' });
         });
     });
 });

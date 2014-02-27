@@ -19,6 +19,8 @@ $('#submitBtn').click( function() {
     		// Initialize the trading panel
 	    	$('#traderView').html(_tradeTemplate);
 	    	$('#orderInputs').html(_orderInputsVolumeTemplate);
+	    	generateChartData();
+	    	makeChart();
 
 	    	// Get fake transactions
 	    	$('#transactions').html(_transactionsTemplate({ transactions: ["You sold 100 shares at $2332", "You bought 200 shares at $5"] } ));
