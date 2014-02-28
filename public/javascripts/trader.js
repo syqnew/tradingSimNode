@@ -4,6 +4,7 @@ _orderInputsVolumeTemplate = Handlebars.compile($('#orderInputsVolume-template')
 _orderInputsBothTemplate = Handlebars.compile($('#orderInputsBoth-template').html());
 _transactionsTemplate = Handlebars.compile($('#transactions-template').html());
 _porfolioTemplate = Handlebars.compile($('#portfolio-template').html());
+_cancelOrdersTemplate = Handlebars.compile($('#cancelOrders-template').html());
 
 $('#traderView').html(_traderInfoTemplate);
       
@@ -19,11 +20,16 @@ $('#submitBtn').click( function() {
     		// Initialize the trading panel
 	    	$('#traderView').html(_tradeTemplate);
 	    	$('#orderInputs').html(_orderInputsVolumeTemplate);
+	    	$('#cancelOrders').html(_cancelOrdersTemplate({ orders: ['Buy 13 shares at $324', 'Buy 13 shares at $324', 'Sell 23 shares at $23'] }));
 	    	generateChartData();
 	    	makeChart();
 
 	    	// Get fake transactions
-	    	$('#transactions').html(_transactionsTemplate({ transactions: ["You sold 100 shares at $2332", "You bought 200 shares at $5"] } ));
+	    	$('#transactions').html(_transactionsTemplate({ transactions: ["You sold 100 shares at $2332", "You bought 200 shares at $5", 
+	    		"You sold 100 shares at $2332", "You bought 200 shares at $5", "You sold 100 shares at $2332", "You bought 200 shares at $5",
+	    		"You sold 100 shares at $2332", "You bought 200 shares at $5", "You sold 100 shares at $2332", "You bought 200 shares at $5",
+	    		"You sold 100 shares at $2332", "You bought 200 shares at $5", "You sold 100 shares at $2332", "You bought 200 shares at $5",
+	    		"You sold 100 shares at $2332", "You bought 200 shares at $5", "You sold 100 shares at $2332", "You bought 200 shares at $5"] } ));
 
 	    	// Set fake portfolio data
 	    	var samplePortfolio = {}
@@ -45,6 +51,10 @@ $('#submitBtn').click( function() {
 				var option = $(this).val();
 				if (option === 'marketBuy' || option === 'marketSell') $('#orderInputs').html(_orderInputsVolumeTemplate);
 				else $('#orderInputs').html(_orderInputsBothTemplate);
+    		});
+
+    		$('.cancelOrderButton').click(function() {
+    			alert("Are you sure you want to Cancel your order");
     		});
 
 			$('#submitOrderBtn').click(function() {

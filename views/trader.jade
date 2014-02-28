@@ -16,46 +16,48 @@ block content
           div(class='container', id='traderView')
             div(class='row lead')
               div(class='col-md-8')
-                label News
+                h4 News
             div(class='row lead')
               div(class='col-md-8')
-                label Graph
+                h4 Graph
                 div(id='chartdiv' style='background: #3f3f4f;color:#ffffff; width: 95%; height: 400px; font-size: 11px;')
               div(class='col-md-4')
                 div(class='row')
-                  label Order Form
+                  h4 Order Form
                   div(class='col-md-12')
                     div(class='row')
-                      p Order Type
+                      h4 Order Type
                     div(class='row')
                       div(class='col-md-6')
+                        // TODO: don't use select AWK
                         select(id='orderType', class='form-control lead')
                           option(value='marketBuy') Market Buy
                           option(value='marketSell') Market Sell
                           option(value='limitBuy') Limit Buy
                           option(value='limitSell') Limit Sell
                     div(class='row', id='orderInputs')
-                    div(class='row')
+                    div(class='row lead')
                       button(type='button' class='btn btn-primary' id='submitOrderBtn') Submit Order
+                div(class='row')
+                  h4 Canceling Orders
+                  div(id='cancelOrders' style='max-height:150px; overflow-y:scroll')
 
                 
             div(class='row lead')
               div(class='col-md-8')
-                label Portfolio Info
+                h4 Portfolio Info
                 div(class='row')
                   div(class='col-md-7' id='portfolio')
               div(class='col-md-4')
                 div(class='row')
-                  label Canceling Orders
-                div(class='row')
-                  label Transaction history
-                  div(id='transactions')
+                  h4 Transaction history
+                  div(id='transactions' style='max-height:200px; overflow-y:scroll')
 
     // Template for Market Orders
     script(id='orderInputsVolume-template', type='text/x-handlebars-template')
       div(class='col-sm-5')
         div(class='row')
-          p Volume
+          small Volume
         div(class='row lead')
           input(type='text', class='form-control', id='volumeInput', placeholder='e.g. 100')
     
@@ -63,12 +65,12 @@ block content
     script(id='orderInputsBoth-template', type='text/x-handlebars-template')
       div(class='col-sm-5')
         div(class='row')
-          p Price
+          small Price
         div(class='row lead')
           input(type='text', class='form-control', id='priceInput', placeholder='e.g. 100')
       div(class='col-sm-5 col-sm-offset-1')
         div(class='row')
-          p Volume
+          small Volume
         div(class='row')
           input(type='text', class='form-control', id='volumeInput', placeholder='e.g. 100')
 
@@ -76,7 +78,8 @@ block content
     script(id='transactions-template' type='text/x-handlebars-template')
       ul(class='list-unstyled')
         {{#each transactions}}
-        li {{this}}
+        li
+          small {{this}}
         {{/each}}
 
     // Template for Portfolio Information
@@ -84,16 +87,16 @@ block content
       table(class='table table-condensed')
         tr
           th
-          th Last
-          th Low
-          th High 
-          th Bid/Size
-          th Ask/Size
-          th Volume
-          th Quantity
-          th Market Value
+          th(class='h4') Last
+          th(class='h4') Low
+          th(class='h4') High 
+          th(class='h4') Bid/Size
+          th(class='h4') Ask/Size
+          th(class='h4') Volume
+          th(class='h4') Quantity
+          th(class='h4') Market Value
         tr
-          th CRL 
+          th(class='h4') CRL 
           td {{last}}
           td {{low}}
           td {{high}}
@@ -103,7 +106,7 @@ block content
           td {{quantity}}
           td {{crlTotal}}
         tr
-          th Cash
+          th(class='h4') Cash
           td -
           td -
           td -
@@ -113,7 +116,7 @@ block content
           td -
           td {{cashTotal}}
         tr
-          th Total
+          th(class='h4') Total
           td -
           td -
           td -
@@ -122,6 +125,15 @@ block content
           td -
           td -
           td {{total}}
+
+    // Template for Canceling Orders
+    script(id='cancelOrders-template' type='text/x-handlebars-template')
+      ul(class='list-unstyled')
+        {{#each orders}}
+        li
+          button(type='button' class='btn btn-xs btn-danger' class='cancelOrderButton') Cancel Order
+          small {{this}}
+        {{/each}}
 
 
     script(src='/socket.io/socket.io.js')
