@@ -10,7 +10,7 @@ server.listen(3000);
 var routes = require('./routes');
 var path = require('path');
 var index = require('./routes/index');
-// var admin = require('./routes/admin');
+var admin = require('./routes/admin');
 var trader = require('./routes/trader');
 // var start = require('./routes/start');
 
@@ -20,6 +20,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', routes.index);
 app.get('/trader', trader.trade);
+app.get('/admin', admin.admin);
 
 io.sockets.on('connection', function (socket) {
     // make sure that a nickname is sent first before any requests can be taken 
