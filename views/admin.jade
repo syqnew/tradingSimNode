@@ -32,33 +32,23 @@ block content
         div(class='col-md-1')
           button(type='button' class='btn btn-primary' id='startPeriodButton') Start Year 1
 
-      div(class='row' id='timer')
+      div(class='row')
+        div(class='col-md-3' id='timer')
 
       script(id='timer-template' type='text/x-handlebars-template')
         p {{minutes}}m {{seconds}}s
 
       script(src='//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.3.0/handlebars.min.js')
+      script(src='../javascripts/timer.js')
 
       script(type='text/javascript').
         _timerTemplate = Handlebars.compile($('#timer-template').html());
 
         $('#startPeriodButton').click(function() {
           var duration = $('#duration').val();
-          var timeLeft = duration * 60 * 1000;
-
-          var timerId = setInterval(function(){
-            if (timeLeft > 0) { 
-              timeLeft -= 1000;
-            } else {
-              clearInterval(timerId);
-              $('button').prop('disabled', true);
-              year = 2;
-            }
-            var minutes = Math.floor(timeLeft / (60 * 1000));
-            var seconds = Math.floor((timeLeft - (minutes * 60 * 1000)) / 1000);
-
-            $('#timer').html(_timerTemplate( { minutes: minutes, seconds: seconds } ));
-          },1000);
+          console.log("Clicked");
+          var timer = new AdminTimer();
+          timer.countdown(duration, '#timer', '#startPeriodButton' );
         });
 
         
