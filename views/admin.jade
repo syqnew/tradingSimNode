@@ -38,17 +38,11 @@ block content
       script(id='timer-template' type='text/x-handlebars-template')
         p {{minutes}}m {{seconds}}s
 
+      script(src='/socket.io/socket.io.js')
       script(src='//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.3.0/handlebars.min.js')
       script(src='../javascripts/timer.js')
+      script(src='../javascripts/admin.js')
 
-      script(type='text/javascript').
-        _timerTemplate = Handlebars.compile($('#timer-template').html());
 
-        $('#startPeriodButton').click(function() {
-          var duration = $('#duration').val();
-          console.log("Clicked");
-          var timer = new AdminTimer();
-          timer.countdown(duration, '#timer', '#startPeriodButton' );
-        });
 
         

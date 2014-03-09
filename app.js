@@ -23,6 +23,7 @@ app.get('/trader', trader.trade);
 app.get('/admin', admin.admin);
 
 io.sockets.on('connection', function (socket) {
+    // trader
     // make sure that a nickname is sent first before any requests can be taken 
     socket.on('set nickname', function (obj) {
         socket.set('nickname', obj["name"], function () {
@@ -62,6 +63,21 @@ io.sockets.on('connection', function (socket) {
                 io.sockets.emit('update', transObject);
                 
             });
+        });
+    });
+
+
+    // admin
+    socket.on('admin', function(obj) {
+
+        socket.emit('admin ready', {ready: true});
+
+        socket.on('open market', function(obj) {
+            console.log(obj);
+        });
+
+        socket.on('close market', function(obj) {
+            console.log(obj);
         });
     });
 });
