@@ -86,6 +86,19 @@ $('#submitBtn').click( function() {
 			socket.on('update', function(data) {
 				console.log(data);
 			});
+
+			// when market opens
+			socket.on('open market', function(yearObj) {
+				console.log("market has opened");
+				// start timer
+				// enable buttons
+			});
+
+			// when market closes
+			socket.on('close market', function(yearObj) {
+				console.log("market has closed");
+				// disable buttons
+			});
     	});
     }
 });

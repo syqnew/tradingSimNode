@@ -1,5 +1,4 @@
-var timerId,
-    year = 1;
+var timerId;
 
 function AdminTimer() {
 }
@@ -27,3 +26,11 @@ AdminTimer.prototype.countdown = function(duration, placeholder, button, callbac
 	$(placeholder).html(_timerTemplate( { minutes: minutes, seconds: seconds } ));
     },1000);
 }
+
+function TraderTimer() {
+
+}
+
+TraderTimer.prototype.countdown = function(duration, placeholder, button, callback) {
+    // do something
+};

@@ -73,11 +73,11 @@ io.sockets.on('connection', function (socket) {
         socket.emit('admin ready', {ready: true});
 
         socket.on('open market', function(obj) {
-            console.log(obj);
+            socket.broadcast.emit('open market', obj);
         });
 
         socket.on('close market', function(obj) {
-            console.log(obj);
+            socket.broadcast.emit('close market', obj);
         });
     });
 });
