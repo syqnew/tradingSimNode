@@ -12,7 +12,8 @@ socket.on('admin ready', function(obj) {
 		$(this).prop('disabled', true);
 		var duration = $('#duration').val();
 		var timer = new AdminTimer();
-		socket.emit('open market', { year: year });
+		console.log("clicked the period button");
+		socket.emit('open market', { year: year , duration: duration });
 		timer.countdown(duration, '#timer', '#startPeriodButton', function() {
 			socket.emit('close market', { year: year });
 			year++; 

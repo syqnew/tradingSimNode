@@ -1,5 +1,8 @@
 var timerId;
 
+// Can we just have one timer object, will it sync across all the client UIs
+
+
 function AdminTimer() {
 }
 
@@ -23,14 +26,6 @@ AdminTimer.prototype.countdown = function(duration, placeholder, button, callbac
     var minutes = Math.floor(timeLeft / (60 * 1000));
     var seconds = Math.floor((timeLeft - (minutes * 60 * 1000)) / 1000);
 
-	$(placeholder).html(_timerTemplate( { minutes: minutes, seconds: seconds } ));
+	$(placeholder).html(_timerTemplate( { year: year, minutes: minutes, seconds: seconds } ));
     },1000);
 }
-
-function TraderTimer() {
-
-}
-
-TraderTimer.prototype.countdown = function(duration, placeholder, button, callback) {
-    // do something
-};

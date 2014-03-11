@@ -5,12 +5,13 @@ _orderInputsBothTemplate = Handlebars.compile($('#orderInputsBoth-template').htm
 _transactionsTemplate = Handlebars.compile($('#transactions-template').html());
 _porfolioTemplate = Handlebars.compile($('#portfolio-template').html());
 _cancelOrdersTemplate = Handlebars.compile($('#cancelOrders-template').html());
+_timerTemplate = Handlebars.compile($('#timer-template').html());
 
 $('#traderView').html(_traderInfoTemplate);
       
 var currentOrders = [];
 var socket = io.connect('http://localhost');
-//var socket = new Socket()
+var year;
 
 $('#submitBtn').click( function() {
 	if ( $('#nameInput').val().length > 0 && $('#emailInput').val().length > 0 ) {
@@ -90,7 +91,13 @@ $('#submitBtn').click( function() {
 			// when market opens
 			socket.on('open market', function(yearObj) {
 				console.log("market has opened");
+				year = yearObj['year'];
 				// start timer
+				var timer = new AdminTimer();
+				timer.countdown(yearObj['duration'],'#timer', null, function() {
+					console.log('called the countdown method');
+				});
+
 				// enable buttons
 			});
 
