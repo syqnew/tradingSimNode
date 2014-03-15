@@ -19,8 +19,6 @@ $('#submitBtn').click( function() {
     	socket.on('ready', function (data) {
     		$('#traderView').html(_tradeTemplate);
     		$('.trading').prop('disabled', true);
-    		// $('#submitOrderBtn').prop('disabled', true);
-
 	
 			// socket listens to the server for updates
 			socket.on('update', function(data) {
@@ -38,23 +36,23 @@ $('#submitBtn').click( function() {
 				});
 
 				// enable buttons
-				createTradingPanel();
+				enableTradingPanel();
 
 			});
 
 			// when market closes
 			socket.on('close market', function(yearObj) {
 				console.log("market has closed");
-				// disable buttons
+				// disable buttons and inputs
+				$('.trading').prop('disabled', true);
 			});
     	});
     }
 });
 
-function createTradingPanel() {
+function enableTradingPanel() {
 	// Initialize the trading panel
 	$('.trading').prop('disabled', false);
-    // $('#submitOrderBtn').prop('disabled', false);
 	$('#orderInputs').html(_orderInputsVolumeTemplate);
 	$('#cancelOrders').html(_cancelOrdersTemplate({ orders: ['Buy 13 shares at $324', 'Buy 13 shares at $324', 'Sell 23 shares at $23'] }));
 	generateChartData();
