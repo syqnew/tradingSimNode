@@ -30,14 +30,14 @@ block content
                       h4 Order Type
                     div(class='row')
                       div(class='col-md-6')
-                        select(id='orderType', class='form-control lead')
+                        select(id='orderType', class='form-control lead trading')
                           option(value='marketBuy') Market Buy
                           option(value='marketSell') Market Sell
                           option(value='limitBuy') Limit Buy
                           option(value='limitSell') Limit Sell
                     div(class='row', id='orderInputs')
                     div(class='row lead')
-                      button(type='button' class='btn btn-primary' id='submitOrderBtn') Submit Order
+                      button(type='button' class='btn btn-primary trading' id='submitOrderBtn') Submit Order
                 div(class='row')
                   h4 Canceling Orders
                   div(id='cancelOrders' style='max-height:150px; overflow-y:scroll')
@@ -63,7 +63,7 @@ block content
         div(class='row')
           small Volume
         div(class='row lead')
-          input(type='text', class='form-control', id='volumeInput', placeholder='e.g. 100')
+          input(type='text', class='form-control trading', id='volumeInput', placeholder='e.g. 100')
     
     // Template for Limit Orders
     script(id='orderInputsBoth-template', type='text/x-handlebars-template')
@@ -71,12 +71,12 @@ block content
         div(class='row')
           small Price
         div(class='row lead')
-          input(type='text', class='form-control', id='priceInput', placeholder='e.g. 100')
+          input(type='text', class='form-control trading', id='priceInput', placeholder='e.g. 100')
       div(class='col-sm-5 col-sm-offset-1')
         div(class='row')
           small Volume
         div(class='row')
-          input(type='text', class='form-control', id='volumeInput', placeholder='e.g. 100')
+          input(type='text', class='form-control trading', id='volumeInput', placeholder='e.g. 100')
 
     // Template for Transaction History
     script(id='transactions-template' type='text/x-handlebars-template')
@@ -135,7 +135,7 @@ block content
       ul(class='list-unstyled')
         {{#each orders}}
         li
-          button(type='button' class='btn btn-xs btn-danger' class='cancelOrderButton') Cancel Order
+          button(type='button trading' class='btn btn-xs btn-danger' class='cancelOrderButton') Cancel Order
           small {{this}}
         {{/each}}
 
