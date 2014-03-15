@@ -9,6 +9,9 @@ socket.emit('admin', {});
 socket.on('admin ready', function(obj) {
 
 	$('#startPeriodButton').click(function() {
+		$('#duration').prop('disabled', true);
+		$('#year1').prop('disabled', true);
+		$('#year2').prop('disabled', true);
 		$(this).prop('disabled', true);
 		var duration = $('#duration').val();
 		var timer = new AdminTimer();
@@ -19,5 +22,6 @@ socket.on('admin ready', function(obj) {
 			year++; 
 		});
 	});
+
 
 });
