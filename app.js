@@ -22,6 +22,11 @@ app.get('/', routes.index);
 app.get('/trader', trader.trade);
 app.get('/admin', admin.admin);
 
+/**
+ * Assumed that the time (in milliseconds) is granular enough to rely on it as an id
+ *
+ */
+
 var marketBuyOrders = [];
 var marketSellOrders = [];
 // bid is limit buys
@@ -48,7 +53,7 @@ io.sockets.on('connection', function (socket) {
                 // try to fulfill order from order book
                 console.log(obj);
 
-                // object looks like { time: 1394909156392, volume: '999', type: 'marketBuy' }
+                // object looks like { time: 1394909156392, volume: '999', type: 'marketBuy', id: 'asdf'}
 
                 // Handle Market Orders
                 if ( obj['type'] === 'marketBuy' ) {
@@ -186,8 +191,14 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice)
     }
 
     // record the sale
+    var sale = {};
+    sale['time'] = time;
+    sale['buyerId'] = bestBid['id'];
+    sale['sellerId'] = bestAsk['id'];
+    sale['amount'] = amount;
+    sales.push(sale);
 
-    // create a quote
+    // create a quote/transaction 
     // update metadata
 }
 
@@ -245,22 +256,30 @@ function matchLimitOrders(bidOrders, askOrders, sellInitiated) {
     // record sale
     var sale = {};
     sale['time'] = time;
-    // sale['buyerId'] =
-    // update metadata
+    sale['buyerId'] = bestBid['id'];
+    sale['sellerId'] = bestAsk['id'];
+    sale['amount'] = amount;
+    sales.push(sale);
+
+    // update metadata/transaction object
     // create quote
 
 }
 
-// sort descending
+// sort descending price
 function bidSort(obj1, obj2) {
     return obj2['price'] - obj1['price'];
 }
 
-// sort ascending
+// sort ascending price
 function askSort(obj1, obj2) {
     return obj1['price'] - obj2['price'];
 }
 
+// sort by ascending time
+function marketOrderSort(obj1, obj2) {
+    return obj1['time'] - obj2['time'];
+}
 
 
 

@@ -19,7 +19,6 @@ $('#submitBtn').click( function() {
   		socket.emit('set nickname', {name: $('#nameInput').val() , email: $('#emailInput').val()});
     	socket.on('ready', function (data) {
     		email = data;
-    		console.log(email);
     		$('#traderView').html(_tradeTemplate);
     		$('.trading').prop('disabled', true);
 	
@@ -34,9 +33,7 @@ $('#submitBtn').click( function() {
 				year = yearObj['year'];
 				// start timer
 				var timer = new AdminTimer();
-				timer.countdown(yearObj['duration'],'#timer', null, function() {
-					console.log('called the countdown method');
-				});
+				timer.countdown(yearObj['duration'],'#timer', null);
 
 				// enable buttons
 				enableTradingPanel();
