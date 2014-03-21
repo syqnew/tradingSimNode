@@ -12,11 +12,14 @@ $('#traderView').html(_traderInfoTemplate);
 var currentOrders = [];
 var socket = io.connect('http://localhost');
 var year;
+var email;
 
 $('#submitBtn').click( function() {
 	if ( $('#nameInput').val().length > 0 && $('#emailInput').val().length > 0 ) {
   		socket.emit('set nickname', {name: $('#nameInput').val() , email: $('#emailInput').val()});
     	socket.on('ready', function (data) {
+    		email = data;
+    		console.log(email);
     		$('#traderView').html(_tradeTemplate);
     		$('.trading').prop('disabled', true);
 	
@@ -97,6 +100,8 @@ function enableTradingPanel() {
 		//TODO: check if inputs were valid and non empty
 		var orderObject = {};
 		orderObject['time'] = time;
+
+		orderObject['id'] = email;
 
 		var volume = $('#volumeInput').val();
 		orderObject['volume'] = volume;

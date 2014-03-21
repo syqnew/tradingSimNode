@@ -24,19 +24,23 @@ app.get('/admin', admin.admin);
 
 var marketBuyOrders = [];
 var marketSellOrders = [];
+// bid is limit buys
 var limitBuyOrders = [];
+// ask is limit asks
 var limitSellOrders = [];
 // Queue to stick the orders when they are first coming in, don't know if actually needed. 
 var pendingOrders = [];
+
+var sales = [];
 
 io.sockets.on('connection', function (socket) {
     // trader
     // make sure that a nickname is sent first before any requests can be taken 
     socket.on('set nickname', function (obj) {
-        socket.set('nickname', obj["name"], function () {
-            // TODO: need to check that name hasn't been take
+        socket.set('nickname', obj["email"], function () {
+            // TODO: need to check that email hasn't been take
             // maybe assign the client an id?
-            socket.emit('ready', obj["name"]);
+            socket.emit('ready', obj["email"]);
 
             // client passed an order object 
             // put in order book
@@ -57,9 +61,13 @@ io.sockets.on('connection', function (socket) {
                 // Handle Limit Orders
                 else if ( obj['type'] === 'limitBuy' ) {
                     limitBuyOrders.push(obj);
+                    // sort 
+                    limitBuyOrders.sort(bidSort);
                     handleLimitOrder(obj['type']);
                 } else if ( obj['type'] === 'limitSell' ) {
                     limitSellOrders.push(obj);
+                    // sort
+                    limitSellOrders.sort(askSort);
                     handleLimitOrder(obj['type']);
                 } 
                 
@@ -113,20 +121,26 @@ function handleMarketOrder(marketType) {
     // check if this limit order matches any other market order
     if ( marketType === 'marketBuy' ) {
         // match with limit sells
+        matchMarketOrders(limitSellOrders, marketBuyOrders, false);
 
     } else if ( marketType === 'marketSell') {
         // match with limit buys
+        matchMarketOrders(limitBuyOrders, marketSellOrders, true);
     }
 }
 
 function handleLimitOrder(limitType) {
     // check if this limit order matches any other limit order
     if ( limitType === 'limitBuy' ) {
-        // match with limitSells
-
+        // match with MarketSells
+        matchMarketOrders(limitBuyOrders, marketSellOrders, true);
+        // match limitSells
+        matchLimitOrders(limitBuyOrders, limitSellOrders, false);
     } else if ( limitType === 'limitSell') {
+        // match with MarketBuys
+        matchMarketOrders(limitSellOrders, marketBuyOrders, false);
         // match with limitBuys
-
+        matchLimitOrders(limitBuyOrders, limitSellOrders, true);
     }
 
 }
@@ -152,6 +166,7 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice)
     if ( amount > amountAtPrice ) {
         amount = amountAtPrice;
         if ( limitOrdersList.length > 1 ) {
+            // have to handle case where the market order is not fulfilled by the first limit order in list
             var nextOrder = limitOrdersList[1];
         }
     }
@@ -162,7 +177,16 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice)
     bestAtPrice['unfulfilled'] -= amount;
     firstAtMarket['unfulfilled'] -= amount;
 
+    // If order is empty, remove it
+    if ( bestAtPrice['unfulfilled'] === 0 ) {
+        limitOrdersList.shift();
+    }
+    if ( firstAtMarket['unfulfilled'] === 0) {
+        marketOrdersList.shift();
+    }
+
     // record the sale
+
     // create a quote
     // update metadata
 }
@@ -219,9 +243,22 @@ function matchLimitOrders(bidOrders, askOrders, sellInitiated) {
     bestAsk['unfulfilled'] -= amount;
 
     // record sale
+    var sale = {};
+    sale['time'] = time;
+    // sale['buyerId'] =
     // update metadata
     // create quote
 
+}
+
+// sort descending
+function bidSort(obj1, obj2) {
+    return obj2['price'] - obj1['price'];
+}
+
+// sort ascending
+function askSort(obj1, obj2) {
+    return obj1['price'] - obj2['price'];
 }
 
 
