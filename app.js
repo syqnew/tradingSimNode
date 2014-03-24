@@ -195,8 +195,14 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice)
     // record the sale
     var sale = {};
     sale['time'] = firstAtMarket['time'];
-    // sale['buyerId'] = bestBid['id'];
-    // sale['sellerId'] = bestAsk['id'];
+    if ( sellAtMarketPrice ) {
+        sale['buyerId'] = bestAtPrice['id'];
+        sale['sellerId'] = firstAtMarket['id'];
+    } else {
+        sale['buyerId'] = firstAtMarket['id'];
+        sale['sellerId'] = bestAtPrice['id'];
+    }
+    
     sale['amount'] = amount;
     sales.push(sale);
 
