@@ -185,11 +185,9 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice)
     // If order is empty, remove it
     if ( bestAtPrice['unfulfilled'] === 0 ) {
         limitOrdersList.shift();
-
     }
     if ( firstAtMarket['unfulfilled'] === 0) {
         marketOrdersList.shift();
-        console.log("HERE");
     }
 
     // record the sale
@@ -202,7 +200,6 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice)
         sale['buyerId'] = firstAtMarket['id'];
         sale['sellerId'] = bestAtPrice['id'];
     }
-    
     sale['amount'] = amount;
     sales.push(sale);
 
@@ -261,6 +258,13 @@ function matchLimitOrders(bidOrders, askOrders, sellInitiated) {
     // fulfill the orders
     bestBid['unfulfilled'] -= amount;
     bestAsk['unfulfilled'] -= amount;
+
+    if ( bestBid['unfulfilled'] === 0 ) {
+        bidOrders.shift();
+    }
+    if ( bestAsk['unfulfilled'] === 0 ) {
+        askOrders.shift();
+    }
 
     // record sale
     var sale = {};
