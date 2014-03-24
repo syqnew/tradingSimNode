@@ -101,14 +101,15 @@ function enableTradingPanel() {
 		orderObject['id'] = email;
 
 		var volume = $('#volumeInput').val();
-		orderObject['volume'] = volume;
+		orderObject['unfulfilled'] = parseInt(volume, 10);
 
 		var option = $('#orderType').val();
 		orderObject['type'] = option;
 		currentOrders[time] = [option, volume];
 
 		if (option === 'limitBuy' || option === 'limitSell') {
-			orderObject['price'] = $('#priceInput').val();
+			var price = $('#priceInput').val();
+			orderObject['price'] = parseInt(price, 10);
 			currentOrders[time].push($('#priceInput').val());
 		}
 				
