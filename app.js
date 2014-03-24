@@ -80,6 +80,7 @@ io.sockets.on('connection', function (socket) {
                 // transObject['buyer'] = 'dummy';
                 // transObject['seller'] = 'dummy';
 
+                // 'quote' part
                 // transObject['last']='99';
                 // transObject['low']='99';
                 // transObject['high']='99';
@@ -158,6 +159,8 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice,
     // first get the order to be matched
     var firstAtMarket = marketOrdersList[0];
     
+    var updateObject = {};
+    updateObject['volume'] = 0;    
 
     while ( firstAtMarket['unfulfilled'] != 0 && limitOrdersList.length > 0 ) { 
         var bestAtPrice = limitOrdersList[0];
@@ -204,9 +207,7 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice,
         sales.push(sale);
 
         // update object sent to all clients
-        var updateObject = {};
-        updateObject['time'] = firstAtMarket['time'];
-        updateObject['volume'] = amount;
+        updateObject['volume'] += amount;
         updateObject['last'] = price;
 
         // create a quote/transaction 
@@ -215,17 +216,12 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice,
         firstAtMarket = marketOrdersList[0];
     }
 
-    callback();
+    callback(updateObject);
 
-}
-
-function sendToClients() {
-    // debugging to make sure that orders are correctly filled
-    io.sockets.emit('update', {marketbuys: marketBuyOrders, marketsells: marketSellOrders, limitbuys: limitBuyOrders, limitsells: limitSellOrders, sale: sales});
 }
 
 /**
- * Match dem limit orders
+ * Match dem limit orders BROKEN FIX
  */
 function matchLimitOrders(bidOrders, askOrders, sellInitiated, callback) {
     // make sure that lists are both nonempty
@@ -234,8 +230,8 @@ function matchLimitOrders(bidOrders, askOrders, sellInitiated, callback) {
     var bestBid = bidOrders[0];
     var bestAsk = askOrders[0];
 
-    var bidPrice = bidOrders['price'];
-    var askPrice = askOrders['price'];
+    var bidPrice = bestBid['price'];
+    var askPrice = bestAsk['price'];
 
     if ( bidPrice != askPrice ) return;
 
@@ -243,25 +239,32 @@ function matchLimitOrders(bidOrders, askOrders, sellInitiated, callback) {
     var time;
     var list;
     var order;
-    if (! sellInitiated) {
-        price = bidPrice;
-        time = bestBid['time'];
-        order = bestBid;
-        list = askOrders;
-    } else {
+    if ( sellInitiated ) {
         price = askPrice;
         time = bestAsk['time'];
         order = bestAsk;
         list = bidOrders;
+    } else {
+        price = bidPrice;
+        time = bestBid['time'];
+        order = bestBid;
+        list = askOrders;
     }
 
+    var updateObject = {};
+    updateObject['volume'] = 0;
+
     while ( order['unfulfilled'] != 0 && list.length > 0 ) {
-        console.log("HERE");
-        var amount;
+
+        // TODO, have to check price
+        var amount, price;
 
         var amountOrder = order['unfulfilled'];
+        var priceOrder = order['price'];
         var amountList = list[0]['unfulfilled'];
+        var priceList = list[0]['price'];
 
+        if ( priceOrder != priceList ) return;
 
         if ( amountOrder > amountList ) {
             amount = amountList;
@@ -277,32 +280,34 @@ function matchLimitOrders(bidOrders, askOrders, sellInitiated, callback) {
         // record sale
         var sale = {};
         sale['time'] = time;
-        if (! sellInitiated) {
-            sale['buyerId'] = order['id'];
-            sale['sellerId'] = list[0]['id'];
-        } else {
+        if ( sellInitiated ) {
             sale['buyerId'] = list[0]['id'];
             sale['sellerId'] = order['id'];
+        } else {
+            sale['buyerId'] = order['id'];
+            sale['sellerId'] = list[0]['id'];
         }
-
-        if ( bestBid['unfulfilled'] === 0 ) {
+        if ( bidOrders[0]['unfulfilled'] === 0 ) {
             bidOrders.shift();
         }
-        if ( bestAsk['unfulfilled'] === 0 ) {
+        if ( askOrders[0]['unfulfilled'] === 0 ) {
             askOrders.shift();
         }
-        
         sale['amount'] = amount;
         sale['type'] = "limit matching";
         sale['price'] = price;
         sales.push(sale);
 
+        // create an update object
+        updateObject['volume'] += amount;
+        updateObject['last'] = price;
+
         // update metadata/transaction object
         // create quote
-        console.log("ORDERRRRRR IS " + order['unfulfilled']);
+
     }
 
-    callback();
+    callback(updateObject);
 
 }
 
@@ -319,6 +324,35 @@ function askSort(obj1, obj2) {
 // sort by ascending time
 function marketOrderSort(obj1, obj2) {
     return obj1['time'] - obj2['time'];
+}
+
+function sendToClients(updateObject) {
+    var quote = calculateQuote();
+    // debugging to make sure that orders are correctly filled
+    io.sockets.emit('update', {update: updateObject});
+    io.sockets.emit('update', {marketbuys: marketBuyOrders, marketsells: marketSellOrders, limitbuys: limitBuyOrders, limitsells: limitSellOrders, sale: sales, quote: quote});
+}
+
+function calculateQuote() {
+    var quote = {};
+    if ( limitBuyOrders.length > 0 ) {
+        var currentBid = limitBuyOrders[0];
+        quote['bid'] = currentBid['price']
+        quote['bidSize'] = currentBid['unfulfilled'];
+    } else {
+        quote['bid'] = -1;
+        quote['bidSize'] = -1;
+    }
+
+    if ( limitSellOrders.length > 0 ) {
+        var currentAsk = limitSellOrders[0];
+        quote['ask'] = currentAsk['price'];
+        quote['askSize'] = currentAsk['unfulfilled'];
+    } else {
+        quote['ask'] = -1;
+        quote['askSize'] = -1;
+    }
+    return quote;
 }
 
 
