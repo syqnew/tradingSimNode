@@ -33,7 +33,7 @@ $('#submitBtn').click( function() {
 				year = yearObj['year'];
 				// start timer
 				var timer = new AdminTimer();
-				timer.countdown(yearObj['duration'],'#timer', null);
+				timer.countdown(yearObj['duration'],'#timer', null, function() {});
 
 				// enable buttons
 				enableTradingPanel();
