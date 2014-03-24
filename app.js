@@ -99,9 +99,6 @@ io.sockets.on('connection', function (socket) {
                 // transObject['crlTotal']='99';
                 // transObject['cashTotal']='99';
                 // transObject['total']='99';
-
-                // send to all sockets
-                // io.sockets.emit('update', {marketbuys: marketBuyOrders, marketsells: marketSellOrders, limitbuys: limitBuyOrders, limitsells: limitSellOrders, sale: sales});
                 
             });
         });
@@ -216,11 +213,10 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice,
         // update metadata
 
         firstAtMarket = marketOrdersList[0];
-
-        
-
     }
+
     callback();
+
 }
 
 function sendToClients() {
@@ -305,8 +301,6 @@ function matchLimitOrders(bidOrders, askOrders, sellInitiated, callback) {
         // create quote
         console.log("ORDERRRRRR IS " + order['unfulfilled']);
     }
-
-    
 
     callback();
 
