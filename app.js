@@ -151,10 +151,6 @@ function handleLimitOrder(limitType) {
 
 }
 
-//
-// I might want to do an object wrapper around the orders... 
-//
-
 /**
  * Market Orders are by ascending time and limit orders by price
  */
@@ -175,10 +171,6 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice,
         var amount;
         if ( amountAtMarket > amountAtPrice ) {
             amount = amountAtPrice;
-            // if ( limitOrdersList.length > 1 ) {
-            //     // have to handle case where the market order is not fulfilled by the first limit order in list
-            //     var nextOrder = limitOrdersList[1];
-            // }
         } else {
             amount = amountAtMarket;
         }
@@ -232,6 +224,7 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice,
 }
 
 function sendToClients() {
+    // debugging to make sure that orders are correctly filled
     io.sockets.emit('update', {marketbuys: marketBuyOrders, marketsells: marketSellOrders, limitbuys: limitBuyOrders, limitsells: limitSellOrders, sale: sales});
 }
 
@@ -243,7 +236,6 @@ function matchLimitOrders(bidOrders, askOrders, sellInitiated, callback) {
     if ( bidOrders.length === 0 || askOrders.length === 0 ) return;
         
     var bestBid = bidOrders[0];
-    console.log("BID ORDERS: " + bidOrders.length);
     var bestAsk = askOrders[0];
 
     var bidPrice = bidOrders['price'];
@@ -253,59 +245,68 @@ function matchLimitOrders(bidOrders, askOrders, sellInitiated, callback) {
 
     var price;
     var time;
-    if (sellInitiated) {
+    var list;
+    var order;
+    if (! sellInitiated) {
         price = bidPrice;
         time = bestBid['time'];
+        order = bestBid;
+        list = askOrders;
     } else {
         price = askPrice;
         time = bestAsk['time'];
+        order = bestAsk;
+        list = bidOrders;
     }
 
-    var amount = bestBid['unfulfilled'];
-    var amountAsk = bestAsk['unfulfilled'];
-    if ( amount > amountAsk ) {
-        amount = amountAsk;
-        if ( askOrders.length > 1 ) {
-            var nextAsk = askOrders[1];
-        }
-    } else {
-        if ( amount < amountAsk) {
-            if (bidOrders.length > 1) {
-                var nextBid = bidOrders[1];
-            }
+    while ( order['unfulfilled'] != 0 && list.length > 0 ) {
+        console.log("HERE");
+        var amount;
+
+        var amountOrder = order['unfulfilled'];
+        var amountList = list[0]['unfulfilled'];
+
+
+        if ( amountOrder > amountList ) {
+            amount = amountList;
         } else {
-            if (bidOrders.length > 1) {
-                var nextBid = bidOrders[1];
-            }
-            if ( askOrders.length > 1 ) {
-                var nextAsk = askOrders[1];
-            }
+            amount = amountOrder;
         }
+        
+        // fulfill the orders
+        order['unfulfilled'] -= amount;
+        list[0]['unfulfilled'] -= amount;
+
+
+        // record sale
+        var sale = {};
+        sale['time'] = time;
+        if (! sellInitiated) {
+            sale['buyerId'] = order['id'];
+            sale['sellerId'] = list[0]['id'];
+        } else {
+            sale['buyerId'] = list[0]['id'];
+            sale['sellerId'] = order['id'];
+        }
+
+        if ( bestBid['unfulfilled'] === 0 ) {
+            bidOrders.shift();
+        }
+        if ( bestAsk['unfulfilled'] === 0 ) {
+            askOrders.shift();
+        }
+        
+        sale['amount'] = amount;
+        sale['type'] = "limit matching";
+        sale['price'] = price;
+        sales.push(sale);
+
+        // update metadata/transaction object
+        // create quote
+        console.log("ORDERRRRRR IS " + order['unfulfilled']);
     }
+
     
-    // fulfill the orders
-    bestBid['unfulfilled'] -= amount;
-    bestAsk['unfulfilled'] -= amount;
-
-    if ( bestBid['unfulfilled'] === 0 ) {
-        bidOrders.shift();
-    }
-    if ( bestAsk['unfulfilled'] === 0 ) {
-        askOrders.shift();
-    }
-
-    // record sale
-    var sale = {};
-    sale['time'] = time;
-    sale['buyerId'] = bestBid['id'];
-    sale['sellerId'] = bestAsk['id'];
-    sale['amount'] = amount;
-    sale['type'] = "limit matching";
-    sale['price'] = price;
-    sales.push(sale);
-
-    // update metadata/transaction object
-    // create quote
 
     callback();
 
