@@ -76,12 +76,10 @@ io.sockets.on('connection', function (socket) {
                 
                 // transaction object
                 // var transObject = {};
+
                 // transObject['buyer'] = 'dummy';
                 // transObject['seller'] = 'dummy';
-                // transObject['buyerTrans'] = 'You bought';
-                // transObject['sellerTrans'] = 'You sold';
-                // transObject['buyerCurOrder'] = ['timestamp', 'the values for the updated order'];
-                // transObject['sellerCurOrder'] = ['timestamp', 'the values for the updated order'];
+
                 // transObject['last']='99';
                 // transObject['low']='99';
                 // transObject['high']='99';
@@ -90,6 +88,12 @@ io.sockets.on('connection', function (socket) {
                 // transObject['ask']='99';
                 // transObject['askSize']='99';
                 // transObject['volume']='99';
+
+                // don't really know how to handle the updating of current orders yet
+                // transObject['buyerCurOrder'] = ['timestamp', 'the values for the updated order'];
+                // transObject['sellerCurOrder'] = ['timestamp', 'the values for the updated order'];
+
+
                 // // must calculate this on the client side
                 // transObject['quantity']='99';
                 // transObject['crlTotal']='99';
@@ -97,7 +101,7 @@ io.sockets.on('connection', function (socket) {
                 // transObject['total']='99';
 
                 // send to all sockets
-                io.sockets.emit('update', {marketbuys: marketBuyOrders, marketsells: marketSellOrders, limitbuys: limitBuyOrders, limitsells: limitSellOrders, sale: sales});
+                // io.sockets.emit('update', {marketbuys: marketBuyOrders, marketsells: marketSellOrders, limitbuys: limitBuyOrders, limitsells: limitSellOrders, sale: sales});
                 
             });
         });
@@ -123,11 +127,11 @@ function handleMarketOrder(marketType) {
     // check if this limit order matches any other market order
     if ( marketType === 'marketBuy' ) {
         // match with limit sells
-        matchMarketOrders(limitSellOrders, marketBuyOrders, false);
+        matchMarketOrders(limitSellOrders, marketBuyOrders, false, sendToClients);
 
     } else if ( marketType === 'marketSell') {
         // match with limit buys
-        matchMarketOrders(limitBuyOrders, marketSellOrders, true);
+        matchMarketOrders(limitBuyOrders, marketSellOrders, true, sendToClients);
     }
 }
 
@@ -135,14 +139,14 @@ function handleLimitOrder(limitType) {
     // check if this limit order matches any other limit order
     if ( limitType === 'limitBuy' ) {
         // match with MarketSells
-        matchMarketOrders(marketSellOrders, limitBuyOrders, true);
+        matchMarketOrders(marketSellOrders, limitBuyOrders, true, sendToClients);
         // match limitSells
-        matchLimitOrders(limitBuyOrders, limitSellOrders, false);
+        matchLimitOrders(limitBuyOrders, limitSellOrders, false, sendToClients);
     } else if ( limitType === 'limitSell') {
         // match with MarketBuys
-        matchMarketOrders(marketBuyOrders, limitSellOrders, false);
+        matchMarketOrders(marketBuyOrders, limitSellOrders, false, sendToClients);
         // match with limitBuys
-        matchLimitOrders(limitBuyOrders, limitSellOrders, true);
+        matchLimitOrders(limitBuyOrders, limitSellOrders, true, sendToClients);
     }
 
 }
@@ -154,63 +158,87 @@ function handleLimitOrder(limitType) {
 /**
  * Market Orders are by ascending time and limit orders by price
  */
-function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice) {
+function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice, callback) {
     // cannot match if either one of the lists are empty
     if ( marketOrdersList.length === 0 || limitOrdersList.length === 0) return;
 
     // first get the order to be matched
     var firstAtMarket = marketOrdersList[0];
-    var bestAtPrice = limitOrdersList[0];
+    
 
-    var price = bestAtPrice['price'];
-    var amountAtMarket = firstAtMarket['unfulfilled'];
-    var amountAtPrice = bestAtPrice['unfulfilled'];
-    var amount;
-    if ( amountAtMarket > amountAtPrice ) {
-        amount = amountAtPrice;
-        // if ( limitOrdersList.length > 1 ) {
-        //     // have to handle case where the market order is not fulfilled by the first limit order in list
-        //     var nextOrder = limitOrdersList[1];
-        // }
-    } else {
-        amount = amountAtMarket;
+    while ( firstAtMarket['unfulfilled'] != 0 && limitOrdersList.length > 0 ) { 
+        var bestAtPrice = limitOrdersList[0];
+
+        var price = bestAtPrice['price'];
+        var amountAtMarket = firstAtMarket['unfulfilled'];
+        var amountAtPrice = bestAtPrice['unfulfilled'];
+        var amount;
+        if ( amountAtMarket > amountAtPrice ) {
+            amount = amountAtPrice;
+            // if ( limitOrdersList.length > 1 ) {
+            //     // have to handle case where the market order is not fulfilled by the first limit order in list
+            //     var nextOrder = limitOrdersList[1];
+            // }
+        } else {
+            amount = amountAtMarket;
+        }
+
+        var currentTime = firstAtMarket['time'];
+
+        // fulfill the orders (altered in the original list also)
+        bestAtPrice['unfulfilled'] -= amount;
+        firstAtMarket['unfulfilled'] -= amount;
+        console.log("FIRST AT MARKET")
+        console.log(firstAtMarket);
+
+        // Careful with this, might accidently remove order before sale. 
+        // If order is empty, remove it
+        if ( bestAtPrice['unfulfilled'] === 0 ) {
+            limitOrdersList.shift();
+        }
+        if ( firstAtMarket['unfulfilled'] === 0) {
+            marketOrdersList.shift();
+        }
+
+        // record the sale 
+        var sale = {};
+        sale['time'] = firstAtMarket['time'];
+        if ( sellAtMarketPrice ) {
+            sale['buyerId'] = bestAtPrice['id'];
+            sale['sellerId'] = firstAtMarket['id'];
+        } else {
+            sale['buyerId'] = firstAtMarket['id'];
+            sale['sellerId'] = bestAtPrice['id'];
+        }
+        sale['amount'] = amount;
+        sale['price'] = price;
+        sales.push(sale);
+
+        // update object sent to all clients
+        var updateObject = {};
+        updateObject['time'] = firstAtMarket['time'];
+        updateObject['volume'] = amount;
+        updateObject['last'] = price;
+
+        // create a quote/transaction 
+        // update metadata
+
+        firstAtMarket = marketOrdersList[0];
+
+        
+
     }
+    callback();
+}
 
-    var currentTime = firstAtMarket['time'];
-
-    // fulfill the orders (altered in the original list also)
-    bestAtPrice['unfulfilled'] -= amount;
-    firstAtMarket['unfulfilled'] -= amount;
-
-    // If order is empty, remove it
-    if ( bestAtPrice['unfulfilled'] === 0 ) {
-        limitOrdersList.shift();
-    }
-    if ( firstAtMarket['unfulfilled'] === 0) {
-        marketOrdersList.shift();
-    }
-
-    // record the sale
-    var sale = {};
-    sale['time'] = firstAtMarket['time'];
-    if ( sellAtMarketPrice ) {
-        sale['buyerId'] = bestAtPrice['id'];
-        sale['sellerId'] = firstAtMarket['id'];
-    } else {
-        sale['buyerId'] = firstAtMarket['id'];
-        sale['sellerId'] = bestAtPrice['id'];
-    }
-    sale['amount'] = amount;
-    sales.push(sale);
-
-    // create a quote/transaction 
-    // update metadata
+function sendToClients() {
+    io.sockets.emit('update', {marketbuys: marketBuyOrders, marketsells: marketSellOrders, limitbuys: limitBuyOrders, limitsells: limitSellOrders, sale: sales});
 }
 
 /**
  * Match dem limit orders
  */
-function matchLimitOrders(bidOrders, askOrders, sellInitiated) {
+function matchLimitOrders(bidOrders, askOrders, sellInitiated, callback) {
     // make sure that lists are both nonempty
     if ( bidOrders.length === 0 || askOrders.length === 0 ) return;
         
@@ -273,19 +301,22 @@ function matchLimitOrders(bidOrders, askOrders, sellInitiated) {
     sale['sellerId'] = bestAsk['id'];
     sale['amount'] = amount;
     sale['type'] = "limit matching";
+    sale['price'] = price;
     sales.push(sale);
 
     // update metadata/transaction object
     // create quote
 
+    callback();
+
 }
 
-// sort descending price
+// sort by descending price
 function bidSort(obj1, obj2) {
     return obj2['price'] - obj1['price'];
 }
 
-// sort ascending price
+// sort by ascending price
 function askSort(obj1, obj2) {
     return obj1['price'] - obj2['price'];
 }
