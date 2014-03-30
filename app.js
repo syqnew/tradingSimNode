@@ -311,13 +311,13 @@ function marketOrderSort(obj1, obj2) {
 }
 
 function sendToClients(updateObject) {
-    var quote = calculateQuote();
+    var quote = calculateQuote(updateObject['sales'][updateObject['sales'].length-1]);
     // debugging to make sure that orders are correctly filled
-    io.sockets.emit('update', {update: updateObject});
-    io.sockets.emit('update', {marketbuys: marketBuyOrders, marketsells: marketSellOrders, limitbuys: limitBuyOrders, limitsells: limitSellOrders, sale: sales, quote: quote});
+    io.sockets.emit('update', {update: updateObject, quote: quote});
+    io.sockets.emit('update', {marketbuys: marketBuyOrders, marketsells: marketSellOrders, limitbuys: limitBuyOrders, limitsells: limitSellOrders, sale: sales});
 }
 
-function calculateQuote() {
+function calculateQuote(lastSale) {
     var quote = {};
     if ( limitBuyOrders.length > 0 ) {
         var currentBid = limitBuyOrders[0];
@@ -336,6 +336,8 @@ function calculateQuote() {
         quote['ask'] = -1;
         quote['askSize'] = -1;
     }
+    quote['volume'] = lastSale['amount'];
+    quote['price'] = lastSale['price'];
     return quote;
 }
 
