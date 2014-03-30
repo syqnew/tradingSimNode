@@ -158,9 +158,11 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice,
 
     // first get the order to be matched
     var firstAtMarket = marketOrdersList[0];
+    console.log(marketOrdersList);
     
     var updateObject = {};
-    updateObject['volume'] = 0;    
+    updateObject['volume'] = 0;   
+    updateObject['sales'] = []; 
 
     while ( firstAtMarket['unfulfilled'] != 0 && limitOrdersList.length > 0 ) { 
         var bestAtPrice = limitOrdersList[0];
@@ -209,9 +211,11 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice,
         // update object sent to all clients
         updateObject['volume'] += amount;
         updateObject['last'] = price;
+        updateObject['sales'].push(sale);
 
         // create a quote/transaction 
         // update metadata
+        if (marketOrdersList.length === 0 ) break;
 
         firstAtMarket = marketOrdersList[0];
     }
@@ -232,6 +236,7 @@ function matchLimitOrders(bidOrders, askOrders, callback) {
 
     var updateObject = {};
     updateObject['volume'] = 0;
+    updateObject['sales'] = [];
 
     while (bidPrice === askPrice) {
 
@@ -278,6 +283,7 @@ function matchLimitOrders(bidOrders, askOrders, callback) {
         // create an update object
         updateObject['volume'] += amount;
         updateObject['last'] = bidPrice;
+        updateObject['sales'].push(sale);
 
         if ( bidOrders.length === 0 || askOrders.length === 0) break;
 
