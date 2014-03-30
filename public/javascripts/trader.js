@@ -14,6 +14,23 @@ var socket = io.connect('http://localhost');
 var year;
 var email;
 
+// this variable name is misleading because it is both the quote and porfolio information
+// but changing it at this point might cause unnecessary bugs/debugging effort (aka Stephanie is lazy)
+var portfolio = {};
+portfolio['last'] = '-';
+portfolio['low'] = '-';
+portfolio['high'] = '-';
+portfolio['bid'] = '-';
+portfolio['bidSize'] = '-';
+portfolio['ask'] = '-';
+portfolio['askSize'] = '-';
+portfolio['volume'] = 0;
+portfolio['quantity'] = 400;
+portfolio['crlTotal'] = '-';
+portfolio['cashTotal'] = 10000;
+portfolio['total'] = '-';
+
+
 $('#submitBtn').click( function() {
 	if ( $('#nameInput').val().length > 0 && $('#emailInput').val().length > 0 ) {
   		socket.emit('set nickname', {name: $('#nameInput').val() , email: $('#emailInput').val()});
@@ -23,8 +40,21 @@ $('#submitBtn').click( function() {
     		$('.trading').prop('disabled', true);
 	
 			// socket listens to the server for updates
-			socket.on('update', function(data) {
-				console.log(data);
+			socket.on('update', function(updateObj) {
+				console.log(updateObj);
+				// update model
+				updatePorfolio( updateObj['quote'], updateObj['update']['sales'] );
+				// update view
+				$('#portfolio').html(_porfolioTemplate(portfolio));
+			});
+
+			// limit orders put in but not matched
+			socket.on('updateNoSale', function(updateObj) {
+				console.log(updateObj);
+				// update model
+				updatePorfolio( updateObj['quote'], null );
+				// update view
+				$('#portfolio').html(_porfolioTemplate(portfolio));
 			});
 
 			// when market opens
@@ -65,21 +95,7 @@ function enableTradingPanel() {
 		"You sold 100 shares at $2332", "You bought 200 shares at $5", "You sold 100 shares at $2332", "You bought 200 shares at $5",
 		"You sold 100 shares at $2332", "You bought 200 shares at $5", "You sold 100 shares at $2332", "You bought 200 shares at $5"] } ));
 
-	// Set fake portfolio data
-	var samplePortfolio = {}
-	samplePortfolio['last']='34';
-	samplePortfolio['low']='34';
-	samplePortfolio['high']='34';
-	samplePortfolio['bid']='34';
-	samplePortfolio['bidSize']='34';
-	samplePortfolio['ask']='34';
-	samplePortfolio['askSize']='34';
-	samplePortfolio['volume']='34';
-	samplePortfolio['quantity']='34';
-	samplePortfolio['crlTotal']='34';
-	samplePortfolio['cashTotal']='34';
-	samplePortfolio['total']='34';
-	$('#portfolio').html(_porfolioTemplate(samplePortfolio));
+	$('#portfolio').html(_porfolioTemplate(portfolio));
 
 	$('#orderType').on('change', function() {
 		var option = $(this).val();
@@ -120,3 +136,63 @@ function enableTradingPanel() {
 	});
 
 }
+
+function updatePorfolio(quote, sales) {
+
+	// updating quote info
+	if ( quote['ask'] === -1 ) {
+		portfolio['ask'] = '-';
+		portfolio['askSize'] = '-';
+	} else {
+		portfolio['ask'] = quote['ask'];
+		portfolio['askSize'] = quote['askSize'];
+	}
+
+	if ( quote['bid'] === -1 ) {
+		portfolio['bid'] = '-';
+		portfolio['bidSize'] = '-';
+	} else {
+		portfolio['bid'] = quote['bid'];
+		portfolio['bidSize'] = quote['bidSize'];
+	}
+
+	portfolio['last'] = quote['price'];
+	if ( portfolio['high'] === '-' ) {
+		portfolio['high'] = quote['price'];
+	} else {
+		portfolio['high'] = Math.max(quote['price'], portfolio['high']);
+	}
+	if ( portfolio['low'] === '-' ) {
+		portfolio['low'] = quote['price'];
+	} else {
+		portfolio['low'] = Math.min(quote['price'], portfolio['low']);
+	}
+
+	portfolio['volume'] = quote['volume'];
+
+	if (sales) {
+	// updating personal portfolio info
+		for ( var i = 0; i < sales.length; i++ ) {
+			var currentSale = sales[i];
+			// client bought shares
+			if ( currentSale['buyerId'] === email ) {
+				portfolio['cashTotal'] -= currentSale['price'] * currentSale['amount'];
+				portfolio['quantity'] += currentSale['amount'];
+			} 
+			// client sold shares
+			if ( currentSale['sellerId'] === email ) {
+				portfolio['cashTotal'] += currentSale['price'] * currentSale['amount'];
+				portfolio['quantity'] -= currentSale['amount'];
+			}
+		}
+
+		// update the value of client's stocks
+		portfolio['crlTotal'] = portfolio['last'] * portfolio['quantity'];
+
+		// update the value of client's entire portfolio
+		portfolio['total'] = portfolio['crlTotal'] + portfolio['cashTotal'];
+	}
+}
+
+
+

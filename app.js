@@ -73,33 +73,11 @@ io.sockets.on('connection', function (socket) {
                     limitSellOrders.sort(askSort);
                     handleLimitOrder(obj['type']);
                 } 
-                
-                // transaction object
-                // var transObject = {};
-
-                // transObject['buyer'] = 'dummy';
-                // transObject['seller'] = 'dummy';
-
-                // 'quote' part
-                // transObject['last']='99';
-                // transObject['low']='99';
-                // transObject['high']='99';
-                // transObject['bid']='99';
-                // transObject['bidSize']='99';
-                // transObject['ask']='99';
-                // transObject['askSize']='99';
-                // transObject['volume']='99';
 
                 // don't really know how to handle the updating of current orders yet
                 // transObject['buyerCurOrder'] = ['timestamp', 'the values for the updated order'];
                 // transObject['sellerCurOrder'] = ['timestamp', 'the values for the updated order'];
 
-
-                // // must calculate this on the client side
-                // transObject['quantity']='99';
-                // transObject['crlTotal']='99';
-                // transObject['cashTotal']='99';
-                // transObject['total']='99';
                 
             });
         });
@@ -185,15 +163,6 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice,
         console.log("FIRST AT MARKET")
         console.log(firstAtMarket);
 
-        // Careful with this, might accidently remove order before sale. 
-        // If order is empty, remove it
-        if ( bestAtPrice['unfulfilled'] === 0 ) {
-            limitOrdersList.shift();
-        }
-        if ( firstAtMarket['unfulfilled'] === 0) {
-            marketOrdersList.shift();
-        }
-
         // record the sale 
         var sale = {};
         sale['time'] = firstAtMarket['time'];
@@ -213,6 +182,15 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice,
         updateObject['last'] = price;
         updateObject['sales'].push(sale);
 
+        // Careful with this, might accidently remove order before sale. 
+        // If order is empty, remove it
+        if ( bestAtPrice['unfulfilled'] === 0 ) {
+            limitOrdersList.shift();
+        }
+        if ( firstAtMarket['unfulfilled'] === 0) {
+            marketOrdersList.shift();
+        }
+
         // create a quote/transaction 
         // update metadata
         if (marketOrdersList.length === 0 ) break;
@@ -228,15 +206,19 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice,
  * Match dem limit orders BROKEN FIX
  */
 function matchLimitOrders(bidOrders, askOrders, callback) { 
-    // make sure that both lists are nonempty
-    if ( bidOrders.length === 0 || askOrders.length === 0) return;
-
-    var bidPrice = bidOrders[0]['price'];
-    var askPrice = askOrders[0]['price'];
 
     var updateObject = {};
     updateObject['volume'] = 0;
     updateObject['sales'] = [];
+
+    // make sure that both lists are nonempty
+    if ( bidOrders.length === 0 || askOrders.length === 0) {
+        callback(updateObject);
+        return;
+    } 
+
+    var bidPrice = bidOrders[0]['price'];
+    var askPrice = askOrders[0]['price'];
 
     while (bidPrice === askPrice) {
 
@@ -311,10 +293,17 @@ function marketOrderSort(obj1, obj2) {
 }
 
 function sendToClients(updateObject) {
-    var quote = calculateQuote(updateObject['sales'][updateObject['sales'].length-1]);
-    // debugging to make sure that orders are correctly filled
-    io.sockets.emit('update', {update: updateObject, quote: quote});
-    io.sockets.emit('update', {marketbuys: marketBuyOrders, marketsells: marketSellOrders, limitbuys: limitBuyOrders, limitsells: limitSellOrders, sale: sales});
+    // only update if transactions were made
+    if ( updateObject['sales'].length > 0) {
+        var quote = calculateQuote(updateObject['sales'][updateObject['sales'].length-1]);
+        
+        io.sockets.emit('update', { update: updateObject, quote: quote });
+        // debugging to make sure that orders are correctly filled
+        // io.sockets.emit('update', {marketbuys: marketBuyOrders, marketsells: marketSellOrders, limitbuys: limitBuyOrders, limitsells: limitSellOrders, sale: sales});
+    } else {
+        var quote = calculateQuote(null);
+        io.sockets.emit('updateNoSale', { quote: quote });
+    }
 }
 
 function calculateQuote(lastSale) {
@@ -336,8 +325,10 @@ function calculateQuote(lastSale) {
         quote['ask'] = -1;
         quote['askSize'] = -1;
     }
-    quote['volume'] = lastSale['amount'];
-    quote['price'] = lastSale['price'];
+    if ( lastSale ) {
+        quote['volume'] = lastSale['amount'];
+        quote['price'] = lastSale['price'];
+    } 
     return quote;
 }
 
