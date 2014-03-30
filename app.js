@@ -139,12 +139,12 @@ function handleLimitOrder(limitType) {
         // match with MarketSells
         matchMarketOrders(marketSellOrders, limitBuyOrders, true, sendToClients);
         // match limitSells
-        matchLimitOrders(limitBuyOrders, limitSellOrders, false, sendToClients);
+        matchLimitOrders(limitBuyOrders, limitSellOrders, sendToClients);
     } else if ( limitType === 'limitSell') {
         // match with MarketBuys
         matchMarketOrders(marketBuyOrders, limitSellOrders, false, sendToClients);
         // match with limitBuys
-        matchLimitOrders(limitBuyOrders, limitSellOrders, true, sendToClients);
+        matchLimitOrders(limitBuyOrders, limitSellOrders, sendToClients);
     }
 
 }
@@ -223,88 +223,66 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice,
 /**
  * Match dem limit orders BROKEN FIX
  */
-function matchLimitOrders(bidOrders, askOrders, sellInitiated, callback) {
-    // make sure that lists are both nonempty
-    if ( bidOrders.length === 0 || askOrders.length === 0 ) return;
-        
-    var bestBid = bidOrders[0];
-    var bestAsk = askOrders[0];
+function matchLimitOrders(bidOrders, askOrders, callback) { 
+    // make sure that both lists are nonempty
+    if ( bidOrders.length === 0 || askOrders.length === 0) return;
 
-    var bidPrice = bestBid['price'];
-    var askPrice = bestAsk['price'];
-
-    if ( bidPrice != askPrice ) return;
-
-    var price;
-    var time;
-    var list;
-    var order;
-    if ( sellInitiated ) {
-        price = askPrice;
-        time = bestAsk['time'];
-        order = bestAsk;
-        list = bidOrders;
-    } else {
-        price = bidPrice;
-        time = bestBid['time'];
-        order = bestBid;
-        list = askOrders;
-    }
+    var bidPrice = bidOrders[0]['price'];
+    var askPrice = askOrders[0]['price'];
 
     var updateObject = {};
     updateObject['volume'] = 0;
 
-    while ( order['unfulfilled'] != 0 && list.length > 0 ) {
+    while (bidPrice === askPrice) {
 
-        // TODO, have to check price
-        var amount, price;
+        var bidOrder = bidOrders[0];
+        var askOrder = askOrders[0];
 
-        var amountOrder = order['unfulfilled'];
-        var priceOrder = order['price'];
-        var amountList = list[0]['unfulfilled'];
-        var priceList = list[0]['price'];
-
-        if ( priceOrder != priceList ) return;
-
-        if ( amountOrder > amountList ) {
-            amount = amountList;
+        var time; 
+        if (bidOrder['time'] > askOrder['time']) {
+            time = bidOrder['time'];
         } else {
-            amount = amountOrder;
+            time = askOrder['time'];
         }
-        
-        // fulfill the orders
-        order['unfulfilled'] -= amount;
-        list[0]['unfulfilled'] -= amount;
 
+        var bidUnfulfilled = bidOrder['unfulfilled'];
+        var askUnfulfilled = askOrder['unfulfilled'];
+        var amount;
 
-        // record sale
+        if ( bidUnfulfilled > askUnfulfilled ) {
+            amount = askUnfulfilled;
+        } else {
+            amount = bidUnfulfilled;
+        }
+
+        bidOrder['unfulfilled'] -= amount;
+        askOrder['unfulfilled'] -= amount;
+
+        // create sale log
         var sale = {};
         sale['time'] = time;
-        if ( sellInitiated ) {
-            sale['buyerId'] = list[0]['id'];
-            sale['sellerId'] = order['id'];
-        } else {
-            sale['buyerId'] = order['id'];
-            sale['sellerId'] = list[0]['id'];
-        }
+        sale['buyerId'] = bidOrder['id'];
+        sale['sellerId'] = askOrder['id'];
+        sale['amount'] = amount;
+        sale['type'] = "limit matching";
+        sale['price'] = bidPrice;
+        sales.push(sale);
+
         if ( bidOrders[0]['unfulfilled'] === 0 ) {
             bidOrders.shift();
         }
         if ( askOrders[0]['unfulfilled'] === 0 ) {
             askOrders.shift();
         }
-        sale['amount'] = amount;
-        sale['type'] = "limit matching";
-        sale['price'] = price;
-        sales.push(sale);
 
         // create an update object
         updateObject['volume'] += amount;
-        updateObject['last'] = price;
+        updateObject['last'] = bidPrice;
 
-        // update metadata/transaction object
-        // create quote
+        if ( bidOrders.length === 0 || askOrders.length === 0) break;
 
+        var bidPrice = bidOrders[0]['price'];
+        var askPrice = askOrders[0]['price'];
     }
 
     callback(updateObject);
