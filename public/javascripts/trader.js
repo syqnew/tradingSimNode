@@ -104,7 +104,7 @@ function enableTradingPanel() {
 		else $('#orderInputs').html(_orderInputsBothTemplate);
 	});
 
-	$('.cancelOrderButton').click(function() {
+	$('#cancelOrderButton').click(function() {
 		alert("Are you sure you want to Cancel your order");
 	});
 

@@ -41,6 +41,7 @@ block content
                 div(class='row')
                   h4 Canceling Orders
                   div(id='cancelOrders' style='max-height:150px; overflow-y:scroll')
+                  button(type='button' class='btn btn-danger trading' id='cancelOrderButton') Cancel Order
 
                 
             div(class='row lead')
@@ -132,13 +133,10 @@ block content
 
     // Template for Canceling Orders
     script(id='cancelOrders-template' type='text/x-handlebars-template')
-      ul(class='list-unstyled')
+      select(id='cancelOrdersSelect', class='form-control lead trading')
         {{#each orders}}
-        li
-          button(type='button trading' class='btn btn-xs btn-danger' class='cancelOrderButton') Cancel Order
-          small {{this}}
+        option(value='{{@key}}') {{this}}
         {{/each}}
-
 
     script(src='/socket.io/socket.io.js')
     script(src='//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.3.0/handlebars.min.js')
