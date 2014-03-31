@@ -12,7 +12,7 @@ $('#traderView').html(_traderInfoTemplate);
 // current orders is an array of arrays of size 2-3
 // [type, volume, price]    
 var currentOrders = {};
-var currentOrderText = [];
+var currentOrderText = {};
 var socket = io.connect('http://localhost');
 var year;
 var email;
@@ -227,7 +227,7 @@ function addToTransaction(sale, type) {
 
 function createCurrentOrdersText() {
 	// reset the cancel orders. Don't know if this is the most efficient approach
-	currentOrderText = [];
+	currentOrderText = {};
 
 	for ( var key in currentOrders) {
 		var order = currentOrders[key];
@@ -242,7 +242,7 @@ function createCurrentOrdersText() {
 		} else if ( type === 'limitSell' ) {
 			text = 'Sell ' + order[1] + ' shares at $' + order[2];
 		}
-		currentOrderText.push(text);
+		currentOrderText[key] = text;
 	}
 	$('#cancelOrders').html(_cancelOrdersTemplate({ orders: currentOrderText}));
 }
