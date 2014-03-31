@@ -62,6 +62,12 @@ $('#submitBtn').click( function() {
 				$('#portfolio').html(_porfolioTemplate(portfolio));
 			});
 
+			// cancel order was successful
+			socket.on('cancel successful', function(obj) {
+				cancelOrder(obj['time']);
+				createCurrentOrdersText();
+			});
+
 			// when market opens
 			socket.on('open market', function(yearObj) {
 				console.log("market has opened");
@@ -90,7 +96,6 @@ function enableTradingPanel() {
 	$('.trading').prop('disabled', false);
 	$('#orderInputs').html(_orderInputsVolumeTemplate);
 	$('#cancelOrders').html(_cancelOrdersTemplate({ orders: currentOrderText}));
-	// $('#cancelOrders').html(_cancelOrdersTemplate({ orders: ['Buy 13 shares at $324', 'Buy 13 shares at $324', 'Sell 23 shares at $23'] }));
 	generateChartData();
 	makeChart();
 
@@ -105,8 +110,11 @@ function enableTradingPanel() {
 	});
 
 	$('#cancelOrderButton').click(function() {
-		alert("Are you sure you want to Cancel your order");
-	});
+		var time = $('#cancelOrdersSelect').val();
+		if ( time ) {
+			socket.emit('cancel order', {time: time, order: currentOrders[time]});
+		}
+ 	});
 
 	$('#submitOrderBtn').click(function() {
 		var time = new Date().getTime();
@@ -245,6 +253,10 @@ function createCurrentOrdersText() {
 		currentOrderText[key] = text;
 	}
 	$('#cancelOrders').html(_cancelOrdersTemplate({ orders: currentOrderText}));
+}
+
+function cancelOrder(time) {
+	delete currentOrders[time];
 }
 
 

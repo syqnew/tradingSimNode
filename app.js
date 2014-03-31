@@ -73,12 +73,35 @@ io.sockets.on('connection', function (socket) {
                     limitSellOrders.sort(askSort);
                     handleLimitOrder(obj['type']);
                 } 
-
-                // don't really know how to handle the updating of current orders yet
-                // transObject['buyerCurOrder'] = ['timestamp', 'the values for the updated order'];
-                // transObject['sellerCurOrder'] = ['timestamp', 'the values for the updated order'];
-
-                
+            });
+            
+            socket.on('cancel order', function(obj) {
+                var orderType = obj['order'][0];
+                if ( orderType === 'marketBuy' ) {
+                    cancelOrder(marketBuyOrders, obj['time'], function(success) {
+                        if ( success ) {
+                            socket.emit('cancel successful', { time: obj['time']})
+                        } 
+                    });
+                } else if ( orderType === 'marketSell' ) {
+                    cancelOrder(marketSellOrders, obj['time'] , function(success) {
+                        if ( success ) {
+                            socket.emit('cancel successful', { time: obj['time']})
+                        } 
+                    });
+                } else if ( orderType === 'limitBuy' ) {
+                    cancelOrder(limitBuyOrders, obj['time'], function(success) {
+                        if ( success ) {
+                            socket.emit('cancel successful', { time: obj['time']})
+                        } 
+                    });
+                } else if ( orderType === 'limitSell') {
+                    cancelOrder(limitSellOrders, obj['time'], function(success) {
+                        if ( success ) {
+                            socket.emit('cancel successful', { time: obj['time']})
+                        } 
+                    });
+                }
             });
         });
     });
@@ -336,6 +359,17 @@ function calculateQuote(lastSale) {
         quote['price'] = lastSale['price'];
     } 
     return quote;
+}
+
+function cancelOrder(orderList, time, callback) {
+    for ( var i = 0; i < orderList.length; i++ ) {
+        if ( orderList[i]['time'] === parseInt(time, 10) ) {
+            orderList.splice(i, 1);
+            callback(true);
+            return;
+        }
+    }
+    callback(false);
 }
 
 
