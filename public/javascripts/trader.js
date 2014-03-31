@@ -8,8 +8,11 @@ _cancelOrdersTemplate = Handlebars.compile($('#cancelOrders-template').html());
 _timerTemplate = Handlebars.compile($('#timer-template').html());
 
 $('#traderView').html(_traderInfoTemplate);
-      
-var currentOrders = [];
+  
+// current orders is an array of arrays of size 2-3
+// [type, volume, price]    
+var currentOrders = {};
+var currentOrderText = [];
 var socket = io.connect('http://localhost');
 var year;
 var email;
@@ -44,7 +47,7 @@ $('#submitBtn').click( function() {
 			socket.on('update', function(updateObj) {
 				console.log(updateObj);
 				// update model
-				updatePorfolio( updateObj['quote'], updateObj['update']['sales'] );
+				updatePorfolio( updateObj['quote'], updateObj['update']['sales'], createCurrentOrdersText );
 				// update view
 				$('#portfolio').html(_porfolioTemplate(portfolio));
 				$('#transactions').html(_transactionsTemplate({transactions: transactions}));
@@ -54,7 +57,7 @@ $('#submitBtn').click( function() {
 			socket.on('updateNoSale', function(updateObj) {
 				console.log(updateObj);
 				// update model
-				updatePorfolio( updateObj['quote'], null );
+				updatePorfolio( updateObj['quote'], null, createCurrentOrdersText );
 				// update view
 				$('#portfolio').html(_porfolioTemplate(portfolio));
 			});
@@ -86,16 +89,10 @@ function enableTradingPanel() {
 	// Initialize the trading panel
 	$('.trading').prop('disabled', false);
 	$('#orderInputs').html(_orderInputsVolumeTemplate);
-	$('#cancelOrders').html(_cancelOrdersTemplate({ orders: ['Buy 13 shares at $324', 'Buy 13 shares at $324', 'Sell 23 shares at $23'] }));
+	$('#cancelOrders').html(_cancelOrdersTemplate({ orders: currentOrderText}));
+	// $('#cancelOrders').html(_cancelOrdersTemplate({ orders: ['Buy 13 shares at $324', 'Buy 13 shares at $324', 'Sell 23 shares at $23'] }));
 	generateChartData();
 	makeChart();
-
-	// Get fake transactions
-	// $('#transactions').html(_transactionsTemplate({ transactions: ["You sold 100 shares at $2332", "You bought 200 shares at $5", 
-	// 	"You sold 100 shares at $2332", "You bought 200 shares at $5", "You sold 100 shares at $2332", "You bought 200 shares at $5",
-	// 	"You sold 100 shares at $2332", "You bought 200 shares at $5", "You sold 100 shares at $2332", "You bought 200 shares at $5",
-	// 	"You sold 100 shares at $2332", "You bought 200 shares at $5", "You sold 100 shares at $2332", "You bought 200 shares at $5",
-	// 	"You sold 100 shares at $2332", "You bought 200 shares at $5", "You sold 100 shares at $2332", "You bought 200 shares at $5"] } ));
 
 	$('#transactions').html(_transactionsTemplate({ transactions: transactions }));
 
@@ -125,23 +122,22 @@ function enableTradingPanel() {
 
 		var option = $('#orderType').val();
 		orderObject['type'] = option;
-		currentOrders[time] = [option, volume];
+		currentOrders[time] = [option, parseInt(volume, 10)];
 
 		if (option === 'limitBuy' || option === 'limitSell') {
 			var price = $('#priceInput').val();
 			orderObject['price'] = parseInt(price, 10);
-			currentOrders[time].push($('#priceInput').val());
+			currentOrders[time].push(parseInt(price, 10));
 		}
+
+		createCurrentOrdersText();
 				
 		socket.emit('make order', orderObject);
-		//socket.makeOrder(orderObject);
-		$('input').val('');
-                
+		$('input').val('');         
 	});
-
 }
 
-function updatePorfolio(quote, sales) {
+function updatePorfolio(quote, sales, callback) {
 
 	// updating quote info
 	if ( quote['ask'] === -1 ) {
@@ -176,6 +172,8 @@ function updatePorfolio(quote, sales) {
 
 	if (sales) {
 	// updating personal portfolio info
+	// when a current order is altered, either partially or completely fulfilled, 
+	// it will be recorded in sales which will have buyer and seller ids
 		for ( var i = 0; i < sales.length; i++ ) {
 			var currentSale = sales[i];
 			// client bought shares
@@ -197,6 +195,8 @@ function updatePorfolio(quote, sales) {
 
 		// update the value of client's entire portfolio
 		portfolio['total'] = portfolio['crlTotal'] + portfolio['cashTotal'];
+
+		callback();
 	}
 }
 
@@ -205,12 +205,46 @@ function updatePorfolio(quote, sales) {
  * Worst typing ever
  */
 function addToTransaction(sale, type) {
+	var time;
 	// go through sales and see if any of the sales are yours
 	if ( type === 'buy' ) {
 		transactions.push('You bought ' + sale['amount'] + ' shares at $' + sale['price']);
+		time = sale['buyerStockId'];
 	} else {
 		transactions.push('You sold ' + sale['amount'] + ' shares at $' + sale['price']);
+		time = sale['sellerStockId'];
 	}
+
+	var order = currentOrders[time];
+	// update cancel orders
+	if (sale['amount'] ===  order[1] ) {
+		delete currentOrders[time];
+	} else {
+		// only the volume can change
+		order[1] -= sale['amount'];
+	}
+}
+
+function createCurrentOrdersText() {
+	// reset the cancel orders. Don't know if this is the most efficient approach
+	currentOrderText = [];
+
+	for ( var key in currentOrders) {
+		var order = currentOrders[key];
+		var type = order[0];
+		var text;
+		if ( type === 'marketBuy' ) {
+			text = 'Buy ' + order[1] + ' shares at Market Price';
+		} else if ( type === 'marketSell' ) {
+			text = 'Sell ' + order[1] + ' shares at Market Price';
+		} else if ( type === 'limitBuy' ) {
+			text = 'Buy ' + order[1] + ' shares at $' + order[2];
+		} else if ( type === 'limitSell' ) {
+			text = 'Sell ' + order[1] + ' shares at $' + order[2];
+		}
+		currentOrderText.push(text);
+	}
+	$('#cancelOrders').html(_cancelOrdersTemplate({ orders: currentOrderText}));
 }
 
 
