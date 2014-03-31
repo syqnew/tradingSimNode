@@ -168,10 +168,14 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice,
         sale['time'] = firstAtMarket['time'];
         if ( sellAtMarketPrice ) {
             sale['buyerId'] = bestAtPrice['id'];
+            sale['buyerStockId'] = bestAtPrice['time'];
             sale['sellerId'] = firstAtMarket['id'];
+            sale['sellerStockId'] = firstAtMarket['time'];
         } else {
             sale['buyerId'] = firstAtMarket['id'];
+            sale['buyerStockId'] = firstAtMarket['time'];
             sale['sellerId'] = bestAtPrice['id'];
+            sale['sellerStockId'] = bestAtPrice['time'];
         }
         sale['amount'] = amount;
         sale['price'] = price;
@@ -248,7 +252,9 @@ function matchLimitOrders(bidOrders, askOrders, callback) {
         // create sale log
         var sale = {};
         sale['time'] = time;
+        sale['buyerStockId'] = bidOrder['time'];
         sale['buyerId'] = bidOrder['id'];
+        sale['sellerStockId'] = askOrder['time'];
         sale['sellerId'] = askOrder['id'];
         sale['amount'] = amount;
         sale['type'] = "limit matching";

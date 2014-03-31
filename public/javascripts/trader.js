@@ -13,6 +13,7 @@ var currentOrders = [];
 var socket = io.connect('http://localhost');
 var year;
 var email;
+var transactions = [];
 
 // this variable name is misleading because it is both the quote and porfolio information
 // but changing it at this point might cause unnecessary bugs/debugging effort (aka Stephanie is lazy)
@@ -46,6 +47,7 @@ $('#submitBtn').click( function() {
 				updatePorfolio( updateObj['quote'], updateObj['update']['sales'] );
 				// update view
 				$('#portfolio').html(_porfolioTemplate(portfolio));
+				$('#transactions').html(_transactionsTemplate({transactions: transactions}));
 			});
 
 			// limit orders put in but not matched
@@ -89,11 +91,13 @@ function enableTradingPanel() {
 	makeChart();
 
 	// Get fake transactions
-	$('#transactions').html(_transactionsTemplate({ transactions: ["You sold 100 shares at $2332", "You bought 200 shares at $5", 
-		"You sold 100 shares at $2332", "You bought 200 shares at $5", "You sold 100 shares at $2332", "You bought 200 shares at $5",
-		"You sold 100 shares at $2332", "You bought 200 shares at $5", "You sold 100 shares at $2332", "You bought 200 shares at $5",
-		"You sold 100 shares at $2332", "You bought 200 shares at $5", "You sold 100 shares at $2332", "You bought 200 shares at $5",
-		"You sold 100 shares at $2332", "You bought 200 shares at $5", "You sold 100 shares at $2332", "You bought 200 shares at $5"] } ));
+	// $('#transactions').html(_transactionsTemplate({ transactions: ["You sold 100 shares at $2332", "You bought 200 shares at $5", 
+	// 	"You sold 100 shares at $2332", "You bought 200 shares at $5", "You sold 100 shares at $2332", "You bought 200 shares at $5",
+	// 	"You sold 100 shares at $2332", "You bought 200 shares at $5", "You sold 100 shares at $2332", "You bought 200 shares at $5",
+	// 	"You sold 100 shares at $2332", "You bought 200 shares at $5", "You sold 100 shares at $2332", "You bought 200 shares at $5",
+	// 	"You sold 100 shares at $2332", "You bought 200 shares at $5", "You sold 100 shares at $2332", "You bought 200 shares at $5"] } ));
+
+	$('#transactions').html(_transactionsTemplate({ transactions: transactions }));
 
 	$('#portfolio').html(_porfolioTemplate(portfolio));
 
@@ -110,7 +114,7 @@ function enableTradingPanel() {
 	$('#submitOrderBtn').click(function() {
 		var time = new Date().getTime();
 
-		//TODO: check if inputs were valid and non empty
+		//TODO: check if inputs were valid and non empty and that there are enough cash or stocks available 
 		var orderObject = {};
 		orderObject['time'] = time;
 
@@ -178,11 +182,13 @@ function updatePorfolio(quote, sales) {
 			if ( currentSale['buyerId'] === email ) {
 				portfolio['cashTotal'] -= currentSale['price'] * currentSale['amount'];
 				portfolio['quantity'] += currentSale['amount'];
+				addToTransaction(currentSale, 'buy');
 			} 
 			// client sold shares
 			if ( currentSale['sellerId'] === email ) {
 				portfolio['cashTotal'] += currentSale['price'] * currentSale['amount'];
 				portfolio['quantity'] -= currentSale['amount'];
+				addToTransaction(currentSale, 'sell');
 			}
 		}
 
@@ -191,6 +197,19 @@ function updatePorfolio(quote, sales) {
 
 		// update the value of client's entire portfolio
 		portfolio['total'] = portfolio['crlTotal'] + portfolio['cashTotal'];
+	}
+}
+
+/**
+ * Type is either 'buy' or 'sell' 
+ * Worst typing ever
+ */
+function addToTransaction(sale, type) {
+	// go through sales and see if any of the sales are yours
+	if ( type === 'buy' ) {
+		transactions.push('You bought ' + sale['amount'] + ' shares at $' + sale['price']);
+	} else {
+		transactions.push('You sold ' + sale['amount'] + ' shares at $' + sale['price']);
 	}
 }
 
