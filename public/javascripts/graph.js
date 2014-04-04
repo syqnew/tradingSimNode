@@ -20,7 +20,6 @@ function addSales(sales) {
 }
 
 function addAskBid(quote) {
-	console.log(quote);
 	var currentTime = new Date().getTime();
 	var currentBid = quote['bid'];
 	var currentAsk = quote['ask'];
@@ -61,8 +60,6 @@ function renderPriceGraph() {
 	if ( bid.length > 0 ) {
 		bid = [[ time - 2500, bid[0][1] ]];
 	}
-	console.log(ask);
-	console.log(bid);
 
 	var plot = $.plot('#chartdiv', 
 		[{
