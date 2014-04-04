@@ -1,134 +1,111 @@
-var chartData = [];
+var priceGraphInterval, timeLeft, min;
+var priceData = [];
+var bid = [];
+var ask = [];
+var min;
+var year1; 
 
-
-function generateChartData() {
-	var firstDate = new Date(2012, 0, 1);
-	firstDate.setDate(firstDate.getDate() - 500);
-	firstDate.setHours(0, 0, 0, 0);
-
-	for (var i = 0; i < 500; i++) {
-		var newDate = new Date(firstDate);
-
-		newDate.setDate(newDate.getDate() + i);
-
-		var a = Math.round(Math.random() * (40 + i)) + 100 + i;
-		var b = Math.round(Math.random() * 100000);
-
-		chartData.push({
-			date: newDate,
-			value: a,
-			volume: b
-		});
-	}
-	// For box plot that shows the spread, if I can get it to work...
-	// chartData.push({
-	// 	date: new Date(2012, 4, 1),
-	// 	value: 432,
-	// 	volume: 980,
-	// 	low: 100, 
-	// 	high: 600,
-	// 	open: 222, 
-	// 	close: 333
-	// });
+// Decided to use flot, seems easier
+function priceGraph(duration) {
+	min = new Date().getTime();
+	timeLeft = duration * 60 * 1000;
+	priceGraphInterval = setInterval(renderPriceGraph, 1000);
 }
 
-function makeChart() {
-	AmCharts.makeChart("chartdiv", {
-		type: "stock",
-	    "theme": "dark",
-	    pathToImages: "http://www.amcharts.com/lib/3/images/",
-		dataSets: [{
-			color: "#b0de09",
-			fieldMappings: [{
-				fromField: "value",
-				toField: "value"
-			}, {
-				fromField: "volume",
-				toField: "volume"
-			}, {
-				fromField: "open",
-				toField: "open"
-			}, {
-				fromField: "close",
-				toField: "close"
-			}, {
-				fromField: "high",
-				toField: "high"
-			}, {
-				fromField: "low",
-				toField: "low"
-			}],
-			dataProvider: chartData,
-			categoryField: "date",
-		}],
-		panels: [{
-			title: "Value",
-			percentHeight: 70,
+function addSales(sales) {
+	for ( var i = 0; i < sales.length; i++ ) {
+		var currentSale = sales[i];
+		priceData.push( [ new Date().getTime(), currentSale['price'] ] );
+	}
+}
 
-			stockGraphs: [{
-				id: "g1",
-				valueField: "value"
+function addAskBid(quote) {
+	console.log(quote);
+	var currentTime = new Date().getTime();
+	var currentBid = quote['bid'];
+	var currentAsk = quote['ask'];
+
+	bid = [];
+	ask = [];
+	if ( parseInt(currentBid) > 0 ) {
+		bid.push( [ currentTime, currentBid ] )
+	} else {
+		bid.push( [] );
+	}
+	if ( parseInt(currentAsk) > 0 ) {
+		ask.push( [ currentTime, currentAsk ] )
+	} else {
+		ask.push( [] );
+	}
+}
+
+/* 
+ * Render the stock price graph in the ui. Contains a triangle for the 'best' bid order, and 
+ * one for the 'best' ask order. 
+ */
+function renderPriceGraph() {	
+	if ( timeLeft > 0 ) {
+		timeLeft -= 1000;
+	}
+	else {
+		clearInterval(priceGraphInterval);
+	}
+
+	var time = new Date().getTime();
+	if ( priceData.length > 0 ) {
+		priceData.push( [ time, priceData[priceData.length-1 ][1]] );
+	}
+	if ( ask.length > 0 ) {
+		ask = [[ time - 2500, ask[0][1] ]];
+	}
+	if ( bid.length > 0 ) {
+		bid = [[ time - 2500, bid[0][1] ]];
+	}
+	console.log(ask);
+	console.log(bid);
+
+	var plot = $.plot('#chartdiv', 
+		[{
+			data : priceData,
+			lines : {
+				show : true,
+				fill : false,
+				fillColor : null
 			},
-			{
-				type: "candlestick",
-				id: "g2",
-				openField: "open",
-				closeField: "close",
-				highField: "high",
-				lowField: "low",
-				valueField: "close",
-				lineColor: "#7f8da9",
-				fillColors: "#7f8da9",
-				negativeLineColor: "#db4c3c",
-				negativeFillColors: "#db4c3c",
-				fillAlphas: 1,
-				useDataSetColors: false,
-				comparable: true,
-				compareField: "value",
-				showBalloon: false
-			}],
-
-			stockLegend: {
-				valueTextRegular: " ",
-				markerType: "none"
+			grid : {
+				hoverable : true
 			}
-		},
-		{
-			title: "Volume",
-			percentHeight: 30,
-			marginTop: 1,
-			showCategoryAxis: true,
-			valueAxes: [{
-
-				dashLength: 5
-			}],
-
-			categoryAxis: {
-				dashLength: 5
-			},
-
-			stockGraphs: [{
-				valueField: "volume",
-				type: "column",
-				showBalloon: false,
-				fillAlphas: 1
-			}],
-
-			stockLegend: {
-				markerType: "none",
-				markerSize: 0,
-				labelText: "",
-				periodValueTextRegular: "[[value.close]]"
-			}
-		} 
-		],
-		// disabled adjustable window at the bottom
-		chartScrollbarSettings: {
-			enabled: false
 		}, 
-		// disabled hoverover date
-		chartCursorSettings: {
-			enabled: false
+		{
+			data : bid,
+			points : {
+				show : true,
+				radius : 3,
+				symbol : "triangle"
+			},
+			color : "#FF0000"
+		}, 
+		{
+			data : ask,
+			points : {
+				show : true,
+				radius : 3,
+				symbol : "upsideDownTriangle"
+			},
+				color : "#FF0000"
 		}
-	});
+		],
+		{
+			series: {
+				shadowSize: 0,	// Drawing is faster without shadows
+				lines: { show: true }
+			}, 
+			xaxis : {
+				mode : "time",
+				timeformat : "%H:%M:%S",
+				min : min
+			}
+		});
+
+	plot.draw();
 }

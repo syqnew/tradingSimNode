@@ -71,10 +71,12 @@ $('#submitBtn').click( function() {
 			// when market opens
 			socket.on('open market', function(yearObj) {
 				console.log("market has opened");
+				var duration = parseInt(yearObj['duration']);
 				year = yearObj['year'];
 				// start timer
 				var timer = new AdminTimer();
 				timer.countdown(yearObj['duration'],'#timer', null, function() {});
+				priceGraph(duration);
 
 				// enable buttons
 				enableTradingPanel();
@@ -96,13 +98,12 @@ function enableTradingPanel() {
 	$('.trading').prop('disabled', false);
 	$('#orderInputs').html(_orderInputsVolumeTemplate);
 	$('#cancelOrders').html(_cancelOrdersTemplate({ orders: currentOrderText}));
-	generateChartData();
-	makeChart();
 
 	$('#transactions').html(_transactionsTemplate({ transactions: transactions }));
 
 	$('#portfolio').html(_porfolioTemplate(portfolio));
 
+	updateChart();
 	$('#orderType').on('change', function() {
 		var option = $(this).val();
 		if (option === 'marketBuy' || option === 'marketSell') $('#orderInputs').html(_orderInputsVolumeTemplate);
@@ -164,24 +165,30 @@ function updatePorfolio(quote, sales, callback) {
 		portfolio['bidSize'] = quote['bidSize'];
 	}
 
-	portfolio['last'] = quote['price'];
-	if ( portfolio['high'] === '-' ) {
-		portfolio['high'] = quote['price'];
-	} else {
-		portfolio['high'] = Math.max(quote['price'], portfolio['high']);
-	}
-	if ( portfolio['low'] === '-' ) {
-		portfolio['low'] = quote['price'];
-	} else {
-		portfolio['low'] = Math.min(quote['price'], portfolio['low']);
-	}
+	addAskBid(quote);
 
-	portfolio['volume'] = quote['volume'];
+	if ( quote.hasOwnProperty('price') ) {
+		portfolio['last'] = quote['price'];
+		portfolio['volume'] = quote['volume'];
+
+		if ( portfolio['high'] === '-' ) {
+			portfolio['high'] = quote['price'];
+		} else {
+			portfolio['high'] = Math.max(quote['price'], portfolio['high']);
+		}
+		if ( portfolio['low'] === '-' ) {
+			portfolio['low'] = quote['price'];
+		} else {
+			portfolio['low'] = Math.min(quote['price'], portfolio['low']);
+		}
+	}
 
 	if (sales) {
-	// updating personal portfolio info
-	// when a current order is altered, either partially or completely fulfilled, 
-	// it will be recorded in sales which will have buyer and seller ids
+
+		addSales(sales);
+		// updating personal portfolio info
+		// when a current order is altered, either partially or completely fulfilled, 
+		// it will be recorded in sales which will have buyer and seller ids
 		for ( var i = 0; i < sales.length; i++ ) {
 			var currentSale = sales[i];
 			// client bought shares
@@ -257,6 +264,11 @@ function createCurrentOrdersText() {
 
 function cancelOrder(time) {
 	delete currentOrders[time];
+}
+
+function updateChart(sales) {
+	//generateChartData();
+	//makeChart();
 }
 
 
