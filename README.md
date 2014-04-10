@@ -4,6 +4,6 @@ tradingSimNode
 
 To run: 
 - Go to tradingSimNode directory
-- type 'npm install' (might need sudo access)
-- type 'node app.js'
-- in web browser, navigate to 'http://localhost:3000/'
+- Type 'npm install' (might need sudo access)
+- Type 'node app.js'
+- In web browser, navigate to 'http://localhost:3000/'
