@@ -4,6 +4,7 @@ var bid = [];
 var ask = [];
 var min;
 var year1; 
+var volumeData = [];
 
 // Decided to use flot, seems easier
 function priceGraph(duration) {
@@ -15,7 +16,9 @@ function priceGraph(duration) {
 function addSales(sales) {
 	for ( var i = 0; i < sales.length; i++ ) {
 		var currentSale = sales[i];
-		priceData.push( [ new Date().getTime(), currentSale['price'] ] );
+		var currentTime = new Date().getTime();
+		priceData.push( [ currentTime, currentSale['price'] ] );
+		volumeData.push( [ currentTime, currentSale['amount'] ] );
 	}
 }
 
@@ -53,6 +56,8 @@ function renderPriceGraph() {
 	var time = new Date().getTime();
 	if ( priceData.length > 0 ) {
 		priceData.push( [ time, priceData[priceData.length-1 ][1]] );
+	} else {
+		priceData.push( [ time, 0 ] );
 	}
 	if ( ask.length > 0 ) {
 		ask = [[ time - 2500, ask[0][1] ]];
@@ -60,6 +65,7 @@ function renderPriceGraph() {
 	if ( bid.length > 0 ) {
 		bid = [[ time - 2500, bid[0][1] ]];
 	}
+	volumeData.push( [ time, 0 ] );
 
 	var plot = $.plot('#chartdiv', 
 		[{
@@ -104,5 +110,25 @@ function renderPriceGraph() {
 			}
 		});
 
+	var volumePlot = $.plot('#volumechartdiv', [ volumeData ], {
+		series : {
+			bars : {
+				show : true,
+				barWidth : 0.5,
+				align : "center"
+			}
+		},
+		xaxis : {
+			mode : "time",
+			timeformat : "%H:%M:%S", 
+			min : min
+		},
+		yaxis : {
+			min: 0
+		}
+	});
+
 	plot.draw();
+	volumePlot.draw();
+
 }
