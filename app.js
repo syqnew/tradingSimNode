@@ -48,11 +48,6 @@ io.sockets.on('connection', function (socket) {
             // client passed an order object 
             // put in order book
             socket.on('make order', function(obj) {
-                // try to fulfill order from order book
-                console.log(obj);
-
-                // object looks like { time: 1394909156392, volume: '999', type: 'marketBuy', id: 'asdf'}
-
                 // Handle Market Orders
                 if ( obj['type'] === 'marketBuy' ) {
                     marketBuyOrders.push(obj);
@@ -159,7 +154,6 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice,
 
     // first get the order to be matched
     var firstAtMarket = marketOrdersList[0];
-    console.log(marketOrdersList);
     
     var updateObject = {};
     updateObject['volume'] = 0;   
@@ -183,8 +177,6 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice,
         // fulfill the orders (altered in the original list also)
         bestAtPrice['unfulfilled'] -= amount;
         firstAtMarket['unfulfilled'] -= amount;
-        console.log("FIRST AT MARKET")
-        console.log(firstAtMarket);
 
         // record the sale 
         var sale = {};

@@ -52,7 +52,6 @@ $('#submitBtn').click( function() {
 	
 			// socket listens to the server for updates
 			socket.on('update', function(updateObj) {
-				console.log(updateObj);
 				// update model
 				updatePorfolio( updateObj['quote'], updateObj['update']['sales'], createCurrentOrdersText );
 				// update view
@@ -62,7 +61,6 @@ $('#submitBtn').click( function() {
 
 			// limit orders put in but not matched
 			socket.on('updateNoSale', function(updateObj) {
-				console.log(updateObj);
 				// update model
 				updatePorfolio( updateObj['quote'], null, createCurrentOrdersText );
 				// update view
