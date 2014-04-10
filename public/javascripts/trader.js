@@ -92,7 +92,6 @@ $('#submitBtn').click( function() {
 
 				// enable buttons
 				enableTradingPanel();
-
 			});
 
 			// when market closes
@@ -136,13 +135,17 @@ function enableTradingPanel() {
 	$('#submitOrderBtn').click(function() {
 		var time = new Date().getTime();
 
-		//TODO: check if inputs were valid and non empty and that there are enough cash or stocks available 
+		var volume = $('#volumeInput').val();
+		var reg = /^\d+$/;
+		// check if inputs were valid and non empty 
+		if ( ! reg.test(volume) ) {
+			$('input').val(''); 
+			return;
+		};
+
 		var orderObject = {};
 		orderObject['time'] = time;
-
-		orderObject['id'] = email;
-
-		var volume = $('#volumeInput').val();
+		orderObject['id'] = email;		
 		orderObject['unfulfilled'] = parseInt(volume, 10);
 
 		var option = $('#orderType').val();
@@ -151,6 +154,10 @@ function enableTradingPanel() {
 
 		if (option === 'limitBuy' || option === 'limitSell') {
 			var price = $('#priceInput').val();
+			if ( ! reg.test(price) ) {
+				$('input').val(''); 
+				return;
+			};
 			orderObject['price'] = parseInt(price, 10);
 			currentOrders[time].push(parseInt(price, 10));
 		}
