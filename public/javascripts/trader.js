@@ -6,6 +6,7 @@ _transactionsTemplate = Handlebars.compile($('#transactions-template').html());
 _porfolioTemplate = Handlebars.compile($('#portfolio-template').html());
 _cancelOrdersTemplate = Handlebars.compile($('#cancelOrders-template').html());
 _timerTemplate = Handlebars.compile($('#timer-template').html());
+_newsTemplate = Handlebars.compile($('#news-template').html());
 
 $('#traderView').html(_traderInfoTemplate);
   
@@ -17,6 +18,9 @@ var socket = io.connect('http://localhost');
 var year;
 var email;
 var transactions = [];
+var newsId; 
+var news = {};
+news['news'] = [];
 
 // this variable name is misleading because it is both the quote and porfolio information
 // but changing it at this point might cause unnecessary bugs/debugging effort (aka Stephanie is lazy)
@@ -42,6 +46,9 @@ $('#submitBtn').click( function() {
     		email = data;
     		$('#traderView').html(_tradeTemplate);
     		$('.trading').prop('disabled', true);
+    		
+    		// Client is assigned a newsId, which chooses which set of news he receives
+			newsId = Math.floor(Math.random()*3);
 	
 			// socket listens to the server for updates
 			socket.on('update', function(updateObj) {
@@ -70,13 +77,18 @@ $('#submitBtn').click( function() {
 
 			// when market opens
 			socket.on('open market', function(yearObj) {
-				console.log("market has opened");
 				var duration = parseInt(yearObj['duration']);
 				year = yearObj['year'];
 				// start timer
 				var timer = new AdminTimer();
 				timer.countdown(yearObj['duration'],'#timer', null, function() {});
 				priceGraph(duration);
+
+				// update news
+				if ( yearObj['news'].length > 0 ) {
+					news['news'].push( yearObj['news'][newsId] );
+					$('#newsBox').html(_newsTemplate(news));
+				}
 
 				// enable buttons
 				enableTradingPanel();
@@ -85,9 +97,14 @@ $('#submitBtn').click( function() {
 
 			// when market closes
 			socket.on('close market', function(yearObj) {
-				console.log("market has closed");
 				// disable buttons and inputs
 				$('.trading').prop('disabled', true);
+
+				// update news
+				if ( yearObj['news'].length > 0 ) {
+					news['news'].push( yearObj['news'][newsId] );
+					$('#newsBox').html(_newsTemplate(news));
+				}
 			});
     	});
     }
@@ -103,7 +120,6 @@ function enableTradingPanel() {
 
 	$('#portfolio').html(_porfolioTemplate(portfolio));
 
-	updateChart();
 	$('#orderType').on('change', function() {
 		var option = $(this).val();
 		if (option === 'marketBuy' || option === 'marketSell') $('#orderInputs').html(_orderInputsVolumeTemplate);
@@ -217,7 +233,7 @@ function updatePorfolio(quote, sales, callback) {
 
 /**
  * Type is either 'buy' or 'sell' 
- * Worst typing ever
+ * Worst typing ever: Does javascript have enums?
  */
 function addToTransaction(sale, type) {
 	var time;
@@ -265,11 +281,3 @@ function createCurrentOrdersText() {
 function cancelOrder(time) {
 	delete currentOrders[time];
 }
-
-function updateChart(sales) {
-	//generateChartData();
-	//makeChart();
-}
-
-
-

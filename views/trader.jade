@@ -17,6 +17,7 @@ block content
             div(class='row lead')
               div(class='col-md-8')
                 h4 News
+                div(class='col-md-12' id='newsBox')
               div(class='col-md-4' id='timer')
             div(class='row lead')
               div(class='col-md-8')
@@ -137,6 +138,14 @@ block content
       select(id='cancelOrdersSelect', class='form-control lead trading')
         {{#each orders}}
         option(value='{{@key}}') {{this}}
+        {{/each}}
+
+    // Template for News
+    script(id='news-template' type='text/x-handlebars-template')
+      ul(class='list-unstyled')
+        {{#each news}}
+        li
+          small {{this}} 
         {{/each}}
 
     script(src='/socket.io/socket.io.js')
