@@ -42,10 +42,6 @@ socket.on('admin ready', function(obj) {
 });
 
 function createNews(event1, event2, callback) {
-	// var stage0 = [];
-	// var stage1 = [];
-	// var stage2 = [];
-	// var state = [];
 	if (event1.substring(0, 1) == "X")
 		state.push(0);
 	if (event1.substring(0, 1) == "Y")

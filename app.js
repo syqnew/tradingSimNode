@@ -12,7 +12,7 @@ var path = require('path');
 var index = require('./routes/index');
 var admin = require('./routes/admin');
 var trader = require('./routes/trader');
-// var start = require('./routes/start');
+var results = require('./routes/results')
 
 app.set('view engine', 'jade');
 app.use(express.static(path.join(__dirname, 'public')));
@@ -21,6 +21,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', routes.index);
 app.get('/trader', trader.trade);
 app.get('/admin', admin.admin);
+app.get('/results', results.results);
 
 /**
  * Assumed that the time (in milliseconds) is granular enough to use as an id
@@ -113,6 +114,9 @@ io.sockets.on('connection', function (socket) {
 
         socket.on('close market', function(obj) {
             socket.broadcast.emit('close market', obj);
+            if ( obj['year'] === 2 ) {
+                socket.broadcast.emit( 'finish', { sales: sales } );
+            }
         });
     });
 });
