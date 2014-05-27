@@ -20,19 +20,29 @@ socket.on('admin ready', function(obj) {
 	});
 
 	$('#startPeriodButton').click(function() {
-		$('#duration').prop('disabled', true);
-		$('#year1').prop('disabled', true);
-		$('#year2').prop('disabled', true);
 		$(this).prop('disabled', true);
+		$('.admin').prop('disabled', true);
+
+		var shortSellEnable; 
+		var shortSellConst = 0;
+		if ($('#shortSellConstraint').val() =='0') shortSellEnable = false;
+		else {
+			shortSellEnable = true;
+			shortSellConst = $('#shortSellConstraint').val();
+		}
+
+		var leverageRatio = $('#leverageRatio').val();
 
 		createNews($('#year1').val(), $('#year2').val(), function() {
 
 			var duration = $('#duration').val();
 			var timer = new AdminTimer();
 			if ( year === 1 ){
-				socket.emit('open market', { year: year , duration: duration, news: stage0 });
+				socket.emit('open market', { year: year , duration: duration, news: stage0, 
+					shortSellEnabled: shortSellEnable, shortSellConstraint: shortSellConst, leverageRatio: leverageRatio });
 			} else {
-				socket.emit('open market', { year: year , duration: duration, news: [] });
+				socket.emit('open market', { year: year , duration: duration, news: [],
+					shortSellEnabled: shortSellEnable, shortSellConstraint: shortSellConst, leverageRatio: leverageRatio });
 			}
 
 			// Send close market message and dividends

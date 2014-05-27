@@ -5,19 +5,19 @@ block content
       div(class='row lead', id='adminView')
         div(class='col-md-2')
           label Year 1 Event
-            select(class='form-control lead' id='year1')
+            select(class='form-control lead admin' id='year1')
               option X
               option Y
               option Z
         div(class='col-md-2')
           label Year 2 Event
-            select(class='form-control lead' id='year2')
+            select(class='form-control lead admin' id='year2')
               option X
               option Y
               option Z
         div(class='col-md-3')
           label Duration (in minutes)
-            select(class='form-control' id='duration')
+            select(class='form-control admin' id='duration')
               option(value='1') 1
               option(value='2') 2
               option(value='3') 3
@@ -30,7 +30,7 @@ block content
               option(value='10') 10
         div(class='col-md-3')
           label Leverage Ratio
-            select(class='form-control' id='leverageRatio')
+            select(class='form-control admin' id='leverageRatio')
               option(value='1') 1
               option(value='2') 2
               option(value='3') 3
@@ -39,12 +39,12 @@ block content
       div(class='row lead')
         div(class='col-md-3')
           label Enable Short Sell
-            select(class='form-control' id='shortSellEnabled')
+            select(class='form-control admin' id='shortSellEnabled')
               option(value='0') No
               option(value='1') Yes
         div(class='col-md-3 col-md-offset-1')
           label Short Sell Constraint
-            select(class='form-control' id='shortSellConstraint')
+            select(class='form-control admin' id='shortSellConstraint')
               option(value='0') 0
               option(value='-1') -1
               option(value='-2') -2

@@ -75,6 +75,7 @@ $('#submitBtn').click( function() {
 
 			// when market opens
 			socket.on('open market', function(yearObj) {
+				console.log(yearObj)
 				var duration = parseInt(yearObj['duration']);
 				year = yearObj['year'];
 				// start timer
@@ -161,7 +162,7 @@ function enableTradingPanel() {
 		}
 
 		createCurrentOrdersText();
-						
+
 		socket.emit('make order', orderObject);
 		$('input').val('');         
 	});
