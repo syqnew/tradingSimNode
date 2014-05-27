@@ -161,7 +161,7 @@ function enableTradingPanel() {
 		}
 
 		createCurrentOrdersText();
-				
+						
 		socket.emit('make order', orderObject);
 		$('input').val('');         
 	});

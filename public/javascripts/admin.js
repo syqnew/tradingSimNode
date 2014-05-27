@@ -11,6 +11,13 @@ _timerTemplate = Handlebars.compile($('#timer-template').html());
 socket.emit('admin', {});
 
 socket.on('admin ready', function(obj) {
+	$('#shortSellConstraint').prop('disabled', true);
+
+	$('#shortSellEnabled').on('change', function() {
+		var option = $(this).val();
+		if (option === '0') $('#shortSellConstraint').prop('disabled', true);
+		else $('#shortSellConstraint').prop('disabled', false);
+	});
 
 	$('#startPeriodButton').click(function() {
 		$('#duration').prop('disabled', true);

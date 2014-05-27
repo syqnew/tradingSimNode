@@ -28,6 +28,26 @@ block content
               option(value='8') 8
               option(value='9') 9
               option(value='10') 10
+        div(class='col-md-3')
+          label Leverage Ratio
+            select(class='form-control' id='leverageRatio')
+              option(value='1') 1
+              option(value='2') 2
+              option(value='3') 3
+              option(value='4') 4
+              option(value='5') 5
+      div(class='row lead')
+        div(class='col-md-3')
+          label Enable Short Sell
+            select(class='form-control' id='shortSellEnabled')
+              option(value='0') No
+              option(value='1') Yes
+        div(class='col-md-3 col-md-offset-1')
+          label Short Sell Constraint
+            select(class='form-control' id='shortSellConstraint')
+              option(value='0') 0
+              option(value='-1') -1
+              option(value='-2') -2
       div(class='row lead')
         div(class='col-md-1')
           button(type='button' class='btn btn-primary' id='startPeriodButton') Start Year 1
