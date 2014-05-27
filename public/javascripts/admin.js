@@ -24,7 +24,7 @@ socket.on('admin ready', function(obj) {
 		$('.admin').prop('disabled', true);
 
 		var shortSellEnable; 
-		var shortSellConst = 0;
+		var shortSellConst = 1;
 		if ($('#shortSellConstraint').val() =='0') shortSellEnable = false;
 		else {
 			shortSellEnable = true;

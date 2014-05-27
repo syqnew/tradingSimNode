@@ -21,6 +21,10 @@ var transactions = [];
 var newsId; 
 var news = {};
 news['news'] = [];
+var cash = 10000; 
+var shortSellEnabled = false;
+var shortSellConstraint = 1; 
+var leverageRatio = 1;
 
 // this variable name is misleading because it is both the quote and porfolio information
 // but changing it at this point might cause unnecessary bugs/debugging effort (aka Stephanie is lazy)
@@ -75,7 +79,10 @@ $('#submitBtn').click( function() {
 
 			// when market opens
 			socket.on('open market', function(yearObj) {
-				console.log(yearObj)
+				shortSellEnabled = yearObj['shortSellEnabled'];
+				shortSellConstraint = yearObj['shortSellConstraint'];
+				leverageRatio = yearObj['leverageRatio'];
+
 				var duration = parseInt(yearObj['duration']);
 				year = yearObj['year'];
 				// start timer
