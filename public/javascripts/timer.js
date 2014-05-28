@@ -1,3 +1,7 @@
+/**
+ * @author Stephanie New
+ */
+
 var timerId;
 
 /*

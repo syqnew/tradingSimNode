@@ -1,3 +1,4 @@
+<!-- @author Stephanie New -->
 <html>
 <head>
      <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
@@ -43,10 +44,7 @@
                 <a class="btn btn-success" id="submitBtn">Next</a>
             </div>
         </div>
-        </div>
-
-
-      
+        </div>  
     </div>
 
     <script type="text/javascript">
@@ -68,33 +66,8 @@
                         $("#adminPasswordInput").val("");
                     }
                 }
-                
             }
         });
     </script>
-
-
-
-
 </body>
 </html>
-
-<!--
-<h1>Home Page</h1>
-
-<script src="/socket.io/socket.io.js"></script>
-<script>
-    var socket = io.connect('http://localhost');
-    
-    socket.emit('set nickname', {nickname: "Panda"}); 
-    
-    socket.on('ready', function (data) {
-        console.log(data);
-    });
-                
-    socket.on('news', function (data) {
-        console.log(data);
-        socket.emit('my other event', { my: 'data' });
-    });
-</script>
--->

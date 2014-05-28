@@ -1,3 +1,7 @@
+/**
+ * @author Stephanie New
+ */
+
 var priceGraphInterval, timeLeft, min, max;
 var priceData = [];
 var bid = [];

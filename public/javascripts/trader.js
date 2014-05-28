@@ -1,3 +1,7 @@
+/**
+ * @author Stephanie New
+ */
+
 _traderInfoTemplate = Handlebars.compile($('#traderInfo-template').html());
 _tradeTemplate = Handlebars.compile($('#trade-template').html());
 _orderInputsVolumeTemplate = Handlebars.compile($('#orderInputsVolume-template').html());

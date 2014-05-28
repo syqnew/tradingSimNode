@@ -1,3 +1,7 @@
+/**
+ * @author Stephanie New
+ */
+ 
 var year = 1;
 var socket = io.connect('http://localhost');
 var stage0 = [];

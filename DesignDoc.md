@@ -40,3 +40,5 @@ Technologies used
 - jQuery (DOM manipulation)
 - Twitter Bootstrap (CSS)
 - Flot (Graphs)
+
+@author Stephanie New
