@@ -1,8 +1,8 @@
 var timerId;
 
-// Can we just have one timer object, will it sync across all the client UIs
-
-
+/*
+ * We have one timer object that syncs across all the client UIs
+ */
 function AdminTimer() {
 }
 
@@ -19,7 +19,6 @@ AdminTimer.prototype.countdown = function(duration, placeholder, button, callbac
             $(button).remove();
             return;
         }
-        // year = 2;
         $(button).prop('disabled', false);
         $(button).text('Start Year 2');
     }
