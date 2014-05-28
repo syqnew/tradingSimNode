@@ -24,7 +24,7 @@ socket.on('admin ready', function(obj) {
 		$('.admin').prop('disabled', true);
 
 		var shortSellEnable; 
-		var shortSellConst = 1;
+		var shortSellConst = 0;
 		if ($('#shortSellConstraint').val() =='0') shortSellEnable = false;
 		else {
 			shortSellEnable = true;
@@ -58,6 +58,9 @@ socket.on('admin ready', function(obj) {
 	});
 });
 
+/*
+ * Creates news, copied from Adlar's original code 
+ */
 function createNews(event1, event2, callback) {
 	if (event1.substring(0, 1) == "X")
 		state.push(0);
@@ -80,13 +83,10 @@ function createNews(event1, event2, callback) {
 				continue;
 			if (s2 == state[1])
 				continue;
-			// var temp1 = {};
 			var temp1 = "NOT " + stateStr1[s1] + " in Year 1 and NOT " + stateStr2[s2] + " in Year 2";
 			stage0.push(temp1);
-			// var temp2 = {};
 			var temp2 = stateStr1[state[0]] + " in Year 1 and NOT " + stateStr2[s2] + " in Year 2";
 			stage1.push(temp2);
-			// var temp3 = {};
 			var temp3 = stateStr1[state[0]] + " in Year 1 and " + stateStr2[state[1]] + " in Year 2";
 			stage2.push(temp3);
 		}

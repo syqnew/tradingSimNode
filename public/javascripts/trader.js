@@ -14,6 +14,7 @@ $('#traderView').html(_traderInfoTemplate);
 // [type, volume, price]    
 var currentOrders = {};
 var currentOrderText = {};
+// change the location from localhost to server address
 var socket = io.connect('http://localhost');
 var year;
 var email;
@@ -24,8 +25,8 @@ news['news'] = [];
 // this cash is just to approximately determine if the user can make a short sell transaction
 var cash = 10000; 
 var shortSellEnabled = false;
-// default value is 1, which will change if short selling is enabled. 
-var shortSellConstraint = 1; 
+// default value is 0, which will only be updated if shortSelling is enabled
+var shortSellConstraint = 0; 
 // this is defined as \frac{assets}{capital} or \frac{amount that stock is worth}{cash}
 var leverageRatio = 1;
 
@@ -47,12 +48,13 @@ portfolio['crlTotal'] = '-';
 portfolio['cashTotal'] = 10000;
 portfolio['total'] = '-';
 
-// on click listener for the submit button
+// on click listener for the submit button for login page
 $('#submitBtn').click( function() {
 	if ( $('#nameInput').val().length > 0 && $('#emailInput').val().length > 0 ) {
   		socket.emit('set nickname', {name: $('#nameInput').val() , email: $('#emailInput').val()});
     	socket.on('ready', function (data) {
     		email = data;
+    		// Make trader view visible
     		$('#traderView').html(_tradeTemplate);
     		$('.trading').prop('disabled', true);
     		
@@ -173,19 +175,53 @@ function enableTradingPanel() {
 				$('input').val(''); 
 				return;
 			};
-			orderObject['price'] = parseInt(price, 10);
+			var parsedPrice = parseInt(price, 10);
+			orderObject['price'] = parsedPrice
 			currentOrders[time].push(parseInt(price, 10));
-		}
+			/*
+			 * Commented out region is a very rough draft for implementing the logic
+			 * for only accepting orders that uphold the leverage ratio and short 
+			 * selling constraint. Created a method called calculateLeverage that 
+			 * returns a boolean that determines if an order is valid or not. 
+			 */
+			// if ( option == 'limitBuy' ) {
+			// 	cash -= parsedPrice * volume;
+			// } else {
+			// 	cash += parsedPrice * volume;
+			// }
+		} 
+		// else {
+		// 	if ( portfolio['last'] != '-' ) {
+		// 		if ( option == 'marketBuy') cash -= portfolio['last'] * volume;
+		// 		else cash += portfolio['last'] * volume;
+		// 	}
+		// }
+		
+		// var orderValid;
+		// if ( option === 'marketBuy' || option === 'limitBuy' ){
+		// 	orderValid = calculateLeverage(volume);
+		// } else {
+		// 	orderValid = calculateLeverage(-1*volume);
+		// }
 
+		// if ( orderValid) {
+		// 	createCurrentOrdersText();
+		// 	socket.emit('make order', orderObject);
+		// } else {
+		// 	alert('Leverage Ratio or Short Selling Constraint was exceeded. Order was cancelled.');
+		// }
+		
 		createCurrentOrdersText();
-
 		socket.emit('make order', orderObject);
 		$('input').val('');         
 	});
 }
 
+/*
+ * Update the portfolio object which fills the table at the bottom of 
+ * the trading screen
+ */
 function updatePorfolio(quote, sales, callback) {
-
 	// updating quote info
 	if ( quote['ask'] === -1 ) {
 		portfolio['ask'] = '-';
@@ -242,6 +278,7 @@ function updatePorfolio(quote, sales, callback) {
 				addToTransaction(currentSale, 'sell');
 			}
 		}
+		cash = portfolio['cashTotal']
 
 		// update the value of client's stocks
 		portfolio['crlTotal'] = portfolio['last'] * portfolio['quantity'];
@@ -253,9 +290,9 @@ function updatePorfolio(quote, sales, callback) {
 	}
 }
 
-/**
+/*
+ * Method updates the transactionHistory of the client 
  * Type is either 'buy' or 'sell' 
- * Worst typing ever: Does javascript have enums?
  */
 function addToTransaction(sale, type) {
 	var time;
@@ -269,7 +306,7 @@ function addToTransaction(sale, type) {
 	}
 
 	var order = currentOrders[time];
-	// update cancel orders
+	// update current orders
 	if (sale['amount'] ===  order[1] ) {
 		delete currentOrders[time];
 	} else {
@@ -278,6 +315,9 @@ function addToTransaction(sale, type) {
 	}
 }
 
+/*
+ * Method creates the text that is seen in the current orders drop down select
+ */
 function createCurrentOrdersText() {
 	// reset the cancel orders. Don't know if this is the most efficient approach
 	currentOrderText = {};
@@ -302,4 +342,22 @@ function createCurrentOrdersText() {
 
 function cancelOrder(time) {
 	delete currentOrders[time];
+}
+
+/*
+ * Method that returns true if leverage ratio and shortSellConstraint will continue to be satisfied 
+ */
+function calculateLeverage(changeInStockAmount) {
+	console.log(leverageRatio)
+	console.log(shortSellConstraint)
+	if (portfolio['crlTotal'] != '-') {
+		console.log("leverage")
+
+		var leverage = (portfolio['crlTotal'] + (changeInStockAmount * portfolio['last']) ) / cash;
+		console.log(leverage)
+		if ( leverage <= leverageRatio && leverage >= shortSellConstraint ) return true;
+		else return false;
+	} else {
+		return true;
+	}
 }

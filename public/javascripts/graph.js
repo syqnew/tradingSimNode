@@ -6,15 +6,21 @@ var min;
 var year1; 
 var volumeData = [];
 
-// Decided to use flot, seems easier
+/*
+ * Create the price and volume graphs
+ */
 function priceGraph(duration) {
 	min = new Date().getTime();
 	max = min + (duration * 60 * 1000);
 	timeLeft = duration * 60 * 1000;
+	// hacky way to fix the range of the volume graph
 	volumeData.push( [ max, 0 ] )
 	priceGraphInterval = setInterval(renderPriceGraph, 1000);
 }
 
+/*
+ * Method to add sales data 
+ */
 function addSales(sales) {
 	for ( var i = 0; i < sales.length; i++ ) {
 		var currentSale = sales[i];
@@ -24,6 +30,9 @@ function addSales(sales) {
 	}
 }
 
+/*
+ * Method to update the bid and ask triangles in the graph
+ */
 function addAskBid(quote) {
 	var currentTime = new Date().getTime();
 	var currentBid = quote['bid'];
@@ -62,10 +71,10 @@ function renderPriceGraph() {
 		priceData.push( [ time, 0 ] );
 	}
 	if ( ask.length > 0 ) {
-		ask = [[ time - 2500, ask[0][1] ]];
+		ask = [[ time - 100, ask[0][1] ]];
 	}
 	if ( bid.length > 0 ) {
-		bid = [[ time - 2500, bid[0][1] ]];
+		bid = [[ time - 100, bid[0][1] ]];
 	}
 	volumeData.push( [ time, 0 ] );
 
