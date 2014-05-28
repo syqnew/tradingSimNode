@@ -1,4 +1,4 @@
-var priceGraphInterval, timeLeft, min;
+var priceGraphInterval, timeLeft, min, max;
 var priceData = [];
 var bid = [];
 var ask = [];
@@ -9,7 +9,9 @@ var volumeData = [];
 // Decided to use flot, seems easier
 function priceGraph(duration) {
 	min = new Date().getTime();
+	max = min + (duration * 60 * 1000);
 	timeLeft = duration * 60 * 1000;
+	volumeData.push( [ max, 0 ] )
 	priceGraphInterval = setInterval(renderPriceGraph, 1000);
 }
 
@@ -96,6 +98,12 @@ function renderPriceGraph() {
 				symbol : "upsideDownTriangle"
 			},
 				color : "#FF0000"
+		}, 
+		{
+			data: [[max, 0]],
+			points: {
+				show: false
+			}
 		}
 		],
 		{
