@@ -169,6 +169,8 @@ function enableTradingPanel() {
 		orderObject['type'] = option;
 		currentOrders[time] = [option, parseInt(volume, 10)];
 
+		// var orderValid;
+
 		if (option === 'limitBuy' || option === 'limitSell') {
 			var price = $('#priceInput').val();
 			if ( ! reg.test(price) ) {
@@ -185,26 +187,19 @@ function enableTradingPanel() {
 			 * returns a boolean that determines if an order is valid or not. 
 			 */
 			// if ( option == 'limitBuy' ) {
-			// 	cash -= parsedPrice * volume;
+			// 	orderValid = calculateLeverage(cash - (parsedPrice * volume), volume);
 			// } else {
-			// 	cash += parsedPrice * volume;
+			//	orderValid = calculateLeverage(cash + (parsedPrice * volume), -1 * volume);
 			// }
 		} 
 		// else {
 		// 	if ( portfolio['last'] != '-' ) {
-		// 		if ( option == 'marketBuy') cash -= portfolio['last'] * volume;
-		// 		else cash += portfolio['last'] * volume;
+		// 		if ( option == 'marketBuy') orderValid = calculateLeverage(cash - (portfolio['last'] * volume), volume);
+		// 		else orderValid = calculateLeverage(cash + (portfolio['last'] * volume), -1 * volume);
 		// 	}
 		// }
-		
-		// var orderValid;
-		// if ( option === 'marketBuy' || option === 'limitBuy' ){
-		// 	orderValid = calculateLeverage(volume);
-		// } else {
-		// 	orderValid = calculateLeverage(-1*volume);
-		// }
 
-		// if ( orderValid) {
+		// if ( orderValid ) {
 		// 	createCurrentOrdersText();
 		// 	socket.emit('make order', orderObject);
 		// } else {
@@ -347,13 +342,13 @@ function cancelOrder(time) {
 /*
  * Method that returns true if leverage ratio and shortSellConstraint will continue to be satisfied 
  */
-function calculateLeverage(changeInStockAmount) {
+function calculateLeverage(cashh, changeInStockAmount) {
 	console.log(leverageRatio)
 	console.log(shortSellConstraint)
 	if (portfolio['crlTotal'] != '-') {
 		console.log("leverage")
 
-		var leverage = (portfolio['crlTotal'] + (changeInStockAmount * portfolio['last']) ) / cash;
+		var leverage = (portfolio['crlTotal'] + (changeInStockAmount * portfolio['last']) ) / cashh;
 		console.log(leverage)
 		if ( leverage <= leverageRatio && leverage >= shortSellConstraint ) return true;
 		else return false;
