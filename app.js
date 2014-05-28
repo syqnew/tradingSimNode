@@ -125,11 +125,11 @@ function handleMarketOrder(marketType) {
     // check if this limit order matches any other market order
     if ( marketType === 'marketBuy' ) {
         // match with limit sells
-        matchMarketOrders(limitSellOrders, marketBuyOrders, false, sendToClients);
+        matchMarketOrders(marketBuyOrders, limitSellOrders, false, sendToClients);
 
     } else if ( marketType === 'marketSell') {
         // match with limit buys
-        matchMarketOrders(limitBuyOrders, marketSellOrders, true, sendToClients);
+        matchMarketOrders(marketSellOrders, limitBuyOrders, true, sendToClients);
     }
 }
 
@@ -146,7 +146,6 @@ function handleLimitOrder(limitType) {
         // match with limitBuys
         matchLimitOrders(limitBuyOrders, limitSellOrders, sendToClients);
     }
-
 }
 
 /**
@@ -226,7 +225,7 @@ function matchMarketOrders(marketOrdersList, limitOrdersList, sellAtMarketPrice,
 }
 
 /**
- * Match dem limit orders BROKEN FIX
+ * Match dem limit orders 
  */
 function matchLimitOrders(bidOrders, askOrders, callback) { 
 

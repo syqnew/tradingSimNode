@@ -21,13 +21,18 @@ var transactions = [];
 var newsId; 
 var news = {};
 news['news'] = [];
+// this cash is just to approximately determine if the user can make a short sell transaction
 var cash = 10000; 
 var shortSellEnabled = false;
+// default value is 1, which will change if short selling is enabled. 
 var shortSellConstraint = 1; 
+// this is defined as \frac{assets}{capital} or \frac{amount that stock is worth}{cash}
 var leverageRatio = 1;
 
-// this variable name is misleading because it is both the quote and porfolio information
-// but changing it at this point might cause unnecessary bugs/debugging effort (aka Stephanie is lazy)
+/* This variable name is misleading because it is both the quote and porfolio information
+ * but changing it at this point might cause unnecessary bugs/debugging effort
+ * This object is used to populate the table at the bottom of the trading screen
+ */ 
 var portfolio = {};
 portfolio['last'] = '-';
 portfolio['low'] = '-';
@@ -42,7 +47,7 @@ portfolio['crlTotal'] = '-';
 portfolio['cashTotal'] = 10000;
 portfolio['total'] = '-';
 
-
+// on click listener for the submit button
 $('#submitBtn').click( function() {
 	if ( $('#nameInput').val().length > 0 && $('#emailInput').val().length > 0 ) {
   		socket.emit('set nickname', {name: $('#nameInput').val() , email: $('#emailInput').val()});
@@ -79,6 +84,7 @@ $('#submitBtn').click( function() {
 
 			// when market opens
 			socket.on('open market', function(yearObj) {
+				// update the short selling and leverage information from admin
 				shortSellEnabled = yearObj['shortSellEnabled'];
 				shortSellConstraint = yearObj['shortSellConstraint'];
 				leverageRatio = yearObj['leverageRatio'];
@@ -115,6 +121,9 @@ $('#submitBtn').click( function() {
     }
 });
 
+/*
+ * This method creates/reveals the trading panel that is used for the simulation
+ */
 function enableTradingPanel() {
 	// Initialize the trading panel
 	$('.trading').prop('disabled', false);
