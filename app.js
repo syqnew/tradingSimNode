@@ -16,7 +16,6 @@ var results = require('./routes/results')
 
 app.set('view engine', 'jade');
 app.use(express.static(path.join(__dirname, 'public')));
-// app.use(express.static(path.join(__dirname, 'templates')));
 
 app.get('/', routes.index);
 app.get('/trader', trader.trade);
@@ -42,7 +41,7 @@ io.sockets.on('connection', function (socket) {
     // make sure that a nickname is sent first before any requests can be taken 
     socket.on('set nickname', function (obj) {
         socket.set('nickname', obj["email"], function () {
-            // TODO: need to check that email hasn't been take
+            // TODO: need to check that email hasn't been registered
             // maybe assign the client an id?
             socket.emit('ready', obj["email"]);
 
@@ -320,10 +319,7 @@ function sendToClients(updateObject) {
     // only update if transactions were made
     if ( updateObject['sales'].length > 0) {
         var quote = calculateQuote(updateObject['sales'][updateObject['sales'].length-1]);
-        
         io.sockets.emit('update', { update: updateObject, quote: quote });
-        // debugging to make sure that orders are correctly filled
-        // io.sockets.emit('update', {marketbuys: marketBuyOrders, marketsells: marketSellOrders, limitbuys: limitBuyOrders, limitsells: limitSellOrders, sale: sales});
     } else {
         var quote = calculateQuote(null);
         io.sockets.emit('updateNoSale', { quote: quote });
@@ -366,8 +362,3 @@ function cancelOrder(orderList, time, callback) {
     }
     callback(false);
 }
-
-
-
-
-
